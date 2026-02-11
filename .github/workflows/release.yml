@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for pre-built assets
+        id: check_assets
+        shell: pwsh
+        run: |
+          $cliExists = Test-Path "dist/release/shruggie-feedtools-cli-*.exe"
+          $guiExists = Test-Path "dist/release/shruggie-feedtools-gui-*.exe"
+          if ($cliExists -and $guiExists) {
+            echo "prebuilt=true" >> $env:GITHUB_OUTPUT
+            Write-Host "Pre-built assets found in dist/release/. Skipping build."
+          } else {
+            echo "prebuilt=false" >> $env:GITHUB_OUTPUT
+            Write-Host "No pre-built assets found. Will build from source."
+          }
+
+      - name: Set up Python 3.12
+        if: steps.check_assets.outputs.prebuilt == 'false'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build release assets
+        if: steps.check_assets.outputs.prebuilt == 'false'
+        shell: pwsh
+        run: |
+          ./scripts/venv-setup.ps1
+          ./scripts/build.ps1 -Release
+
+      - name: Build Python package
+        if: steps.check_assets.outputs.prebuilt == 'false'
+        shell: pwsh
+        run: |
+          .venv/Scripts/python -m build
+
+      - name: Collect Python package artifacts
+        shell: pwsh
+        run: |
+          if (Test-Path "dist/*.tar.gz") {
+            Copy-Item dist/*.tar.gz dist/release/ -ErrorAction SilentlyContinue
+          }
+          if (Test-Path "dist/*.whl") {
+            Copy-Item dist/*.whl dist/release/ -ErrorAction SilentlyContinue
+          }
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/release/*
+          generate_release_notes: true
