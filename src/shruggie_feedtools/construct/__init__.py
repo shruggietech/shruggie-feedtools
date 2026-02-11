@@ -1,0 +1,1 @@
+"""Feed construction from templates."""
