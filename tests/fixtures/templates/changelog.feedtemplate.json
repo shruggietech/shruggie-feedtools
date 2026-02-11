@@ -1,0 +1,22 @@
+{
+  "template_version": "1.0",
+  "feed": {
+    "title": "Project Changelog",
+    "link": "https://github.com/shruggietech/project",
+    "description": "Development changelog entries",
+    "language": "en-us"
+  },
+  "item_mapping": {
+    "text_target": "content",
+    "title_strategy": "first_line",
+    "title_max_length": 80,
+    "description_strategy": "truncate",
+    "description_max_length": 200,
+    "guid_strategy": "sha256",
+    "link_pattern": "https://github.com/shruggietech/project/entries/{guid}"
+  },
+  "item_defaults": {
+    "author": "wthompson",
+    "categories": ["changelog", "dev"]
+  }
+}

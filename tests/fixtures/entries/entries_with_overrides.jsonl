@@ -1,0 +1,3 @@
+{"text": "Incident detected on web-03.", "timestamp": "2026-02-10T08:30:00Z", "title": "CRITICAL: web-03 Down", "author": "jdoe", "categories": ["critical", "web-03"]}
+{"text": "Incident escalated to P1 priority.", "timestamp": "2026-02-10T08:35:00Z", "author": "jsmith"}
+{"text": "Incident resolved. Root cause: expired TLS cert.", "timestamp": "2026-02-10T09:15:00Z", "categories": ["resolved"]}

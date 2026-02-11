@@ -1,0 +1,45 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "Development changelog entries",
+    "extensions": {},
+    "generator": "shruggie-feedtools/0.1.0",
+    "image": "",
+    "language": "en-us",
+    "last_updated": "2026-02-10T14:00:00Z",
+    "link": "https://github.com/shruggietech/project",
+    "title": "Project Changelog",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "wthompson",
+      "categories": [
+        "changelog",
+        "dev"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Refactored the adapter pipeline\nSplit feedparser_adapter into per-format modules for clarity.",
+      "description": "Refactored the adapter pipeline\nSplit feedparser_adapter into per-format modules for clarity.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "7a78980ae39f3f30bf69cbb739c2a29006fddf1cf3333453a6715aae46492fd9",
+      "guid_is_permalink": false,
+      "link": "https://github.com/shruggietech/project/entries/7a78980ae39f3f30bf69cbb739c2a29006fddf1cf3333453a6715aae46492fd9",
+      "pub_date": "2026-02-10T14:00:00Z",
+      "thumbnail": "",
+      "title": "Refactored the adapter pipeline",
+      "updated": null
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "template",
+    "type": "constructed",
+    "url": null
+  },
+  "status": "ok"
+}

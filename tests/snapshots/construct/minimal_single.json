@@ -1,0 +1,42 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "",
+    "extensions": {},
+    "generator": "shruggie-feedtools/0.1.0",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T08:30:00Z",
+    "link": "",
+    "title": "My Feed",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Server web-03 is experiencing elevated latency on port 443.",
+      "description": "Server web-03 is experiencing elevated latency on port 443.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "886e05a91029587a2d566d2c0eaa3b87624ab445777a9d1a9bc7ef63ee5faea1",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:30:00Z",
+      "thumbnail": "",
+      "title": "Server web-03 is experiencing elevated latency on port 443.",
+      "updated": null
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "template",
+    "type": "constructed",
+    "url": null
+  },
+  "status": "ok"
+}

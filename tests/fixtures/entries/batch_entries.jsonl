@@ -1,0 +1,10 @@
+{"text": "Monitoring alert triggered for web-03 port 443.", "timestamp": "2026-02-10T08:00:00Z"}
+{"text": "Elevated latency detected. p99 > 2s for 5 consecutive minutes.", "timestamp": "2026-02-10T08:05:00Z"}
+{"text": "Auto-scaling initiated. Spinning up web-04 and web-05.", "timestamp": "2026-02-10T08:10:00Z"}
+{"text": "Load balancer updated with new backend instances.", "timestamp": "2026-02-10T08:15:00Z"}
+{"text": "Latency dropping. p99 now at 800ms.", "timestamp": "2026-02-10T08:20:00Z"}
+{"text": "Root cause identified: expired TLS certificate on upstream proxy.", "timestamp": "2026-02-10T08:25:00Z"}
+{"text": "TLS certificate renewed and deployed across all nodes.", "timestamp": "2026-02-10T08:30:00Z"}
+{"text": "Latency returned to normal levels. p99 < 200ms.", "timestamp": "2026-02-10T08:35:00Z"}
+{"text": "Auto-scaled instances terminated. Back to baseline capacity.", "timestamp": "2026-02-10T08:40:00Z"}
+{"text": "Post-incident review scheduled for 2026-02-11 10:00 UTC.", "timestamp": "2026-02-10T08:45:00Z"}

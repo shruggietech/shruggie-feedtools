@@ -1,0 +1,86 @@
+{
+  "feed": {
+    "author": "ops-bot",
+    "categories": [
+      "infrastructure",
+      "monitoring"
+    ],
+    "description": "Automated incident reports from monitoring",
+    "extensions": {},
+    "generator": "shruggie-feedtools/0.1.0",
+    "image": "https://status.example.com/logo.png",
+    "language": "en-us",
+    "last_updated": "2026-02-10T09:15:00Z",
+    "link": "https://status.example.com",
+    "title": "Server Incident Log",
+    "ttl": 15
+  },
+  "items": [
+    {
+      "author": "jdoe",
+      "categories": [
+        "critical",
+        "web-03"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Incident detected on web-03.",
+      "description": "Incident detected on web-03.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "f092182af20d86b8e1a533a0f4950df4bc91a1b5f3394e6d8cb707ba9fb9eef3",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:30:00Z",
+      "thumbnail": "",
+      "title": "CRITICAL: web-03 Down",
+      "updated": null
+    },
+    {
+      "author": "jsmith",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Incident escalated to P1 priority.",
+      "description": "Incident escalated to P1 priority.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "3e61ed88e365e7ea64d5d63ef3354a1dea02a56b27f404d26307e78de905aa8b",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:35:00Z",
+      "thumbnail": "",
+      "title": "Incident escalated to P1 priority.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "resolved"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Incident resolved. Root cause: expired TLS cert.",
+      "description": "Incident resolved. Root cause: expired TLS cert.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "097e3602fa049ce5982413815ff1099832d4dba15f87b12e70c3d4f99273428a",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T09:15:00Z",
+      "thumbnail": "",
+      "title": "Incident resolved. Root cause: expired TLS cert.",
+      "updated": null
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "template",
+    "type": "constructed",
+    "url": null
+  },
+  "status": "ok"
+}

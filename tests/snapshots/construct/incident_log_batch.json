@@ -1,0 +1,218 @@
+{
+  "feed": {
+    "author": "ops-bot",
+    "categories": [
+      "infrastructure",
+      "monitoring"
+    ],
+    "description": "Automated incident reports from monitoring",
+    "extensions": {},
+    "generator": "shruggie-feedtools/0.1.0",
+    "image": "https://status.example.com/logo.png",
+    "language": "en-us",
+    "last_updated": "2026-02-10T08:45:00Z",
+    "link": "https://status.example.com",
+    "title": "Server Incident Log",
+    "ttl": 15
+  },
+  "items": [
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Monitoring alert triggered for web-03 port 443.",
+      "description": "Monitoring alert triggered for web-03 port 443.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "c1d86099f5506f873963a78a3567eac9b01b56d187381849afec971ff1c73721",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:00:00Z",
+      "thumbnail": "",
+      "title": "Monitoring alert triggered for web-03 port 443.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Elevated latency detected. p99 > 2s for 5 consecutive minutes.",
+      "description": "Elevated latency detected. p99 > 2s for 5 consecutive minutes.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "1890ec05445a70a4f2d0529d4e821738d33cb9160fe8041dbd8d5ad474cb674d",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:05:00Z",
+      "thumbnail": "",
+      "title": "Elevated latency detected. p99 > 2s for 5 consecutive minutes.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Auto-scaling initiated. Spinning up web-04 and web-05.",
+      "description": "Auto-scaling initiated. Spinning up web-04 and web-05.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "b8f2e44bf6d47bfb9a91b3b00302ace1c08daee8add19c1a92a4d227a631e30f",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:10:00Z",
+      "thumbnail": "",
+      "title": "Auto-scaling initiated. Spinning up web-04 and web-05.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Load balancer updated with new backend instances.",
+      "description": "Load balancer updated with new backend instances.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "2ff5843eb8cd862f1f98b20dc02a3dd707d02aa8f6004b7940aec7f4dad44743",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:15:00Z",
+      "thumbnail": "",
+      "title": "Load balancer updated with new backend instances.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Latency dropping. p99 now at 800ms.",
+      "description": "Latency dropping. p99 now at 800ms.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "0d0cea2021ca02f022609d6b34bae096e4065aff94a187ccbc585269b51d7ff7",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:20:00Z",
+      "thumbnail": "",
+      "title": "Latency dropping. p99 now at 800ms.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Root cause identified: expired TLS certificate on upstream proxy.",
+      "description": "Root cause identified: expired TLS certificate on upstream proxy.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "edf90165ea6c3b763141f84422baead4e892ce807f72b75d7b7b813a67c92b18",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:25:00Z",
+      "thumbnail": "",
+      "title": "Root cause identified: expired TLS certificate on upstream proxy.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "TLS certificate renewed and deployed across all nodes.",
+      "description": "TLS certificate renewed and deployed across all nodes.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "75b43a18f762dbe6a4450faf1287ecf8b103f284393b592d4917c3dfb2beb617",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:30:00Z",
+      "thumbnail": "",
+      "title": "TLS certificate renewed and deployed across all nodes.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Latency returned to normal levels. p99 < 200ms.",
+      "description": "Latency returned to normal levels. p99 < 200ms.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "ce33756ef355a88d5839adb016ad3a80d6808d51a1285a69756715bb8ece80c2",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:35:00Z",
+      "thumbnail": "",
+      "title": "Latency returned to normal levels. p99 < 200ms.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Auto-scaled instances terminated. Back to baseline capacity.",
+      "description": "Auto-scaled instances terminated. Back to baseline capacity.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "eb8c1ff8b70be701ae08f2f7aaf19a73816d74028939becc1e4d3d2c7563bea5",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:40:00Z",
+      "thumbnail": "",
+      "title": "Auto-scaled instances terminated. Back to baseline capacity.",
+      "updated": null
+    },
+    {
+      "author": "ops-bot",
+      "categories": [
+        "incident"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "Post-incident review scheduled for 2026-02-11 10:00 UTC.",
+      "description": "Post-incident review scheduled for 2026-02-11 10:00 UTC.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "fee5ef6fc1e94dbcf4c9641c59f80f7a33a67caf471da7e410f7c8bd56339a64",
+      "guid_is_permalink": false,
+      "link": "",
+      "pub_date": "2026-02-10T08:45:00Z",
+      "thumbnail": "",
+      "title": "Post-incident review scheduled for 2026-02-11 10:00 UTC.",
+      "updated": null
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "template",
+    "type": "constructed",
+    "url": null
+  },
+  "status": "ok"
+}

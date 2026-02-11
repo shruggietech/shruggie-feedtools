@@ -1,0 +1,24 @@
+{
+  "template_version": "1.0",
+  "feed": {
+    "title": "All Strategies Test Feed",
+    "link": "https://example.com/all-strategies",
+    "description": "Exercises every strategy combination"
+  },
+  "item_mapping": {
+    "text_target": "both",
+    "title_strategy": "truncate",
+    "title_max_length": 60,
+    "description_strategy": "first_line",
+    "description_max_length": 280,
+    "guid_strategy": "sequential",
+    "link_pattern": "https://example.com/items/{guid}"
+  },
+  "item_defaults": {
+    "author": "test-bot",
+    "categories": ["test"],
+    "thumbnail": "https://example.com/thumb.png",
+    "link": "",
+    "extensions": {"custom_key": "custom_value"}
+  }
+}

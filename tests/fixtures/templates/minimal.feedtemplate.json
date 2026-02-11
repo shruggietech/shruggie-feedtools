@@ -1,0 +1,11 @@
+{
+  "template_version": "1.0",
+  "feed": {
+    "title": "My Feed"
+  },
+  "item_mapping": {
+    "text_target": "content",
+    "title_strategy": "first_line",
+    "guid_strategy": "sha256"
+  }
+}

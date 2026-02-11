@@ -1,0 +1,29 @@
+{
+  "template_version": "1.0",
+  "feed": {
+    "title": "Server Incident Log",
+    "link": "https://status.example.com",
+    "description": "Automated incident reports from monitoring",
+    "language": "en-us",
+    "author": "ops-bot",
+    "image": "https://status.example.com/logo.png",
+    "categories": ["infrastructure", "monitoring"],
+    "ttl": 15
+  },
+  "item_mapping": {
+    "text_target": "content",
+    "title_strategy": "first_line",
+    "title_max_length": 120,
+    "description_strategy": "truncate",
+    "description_max_length": 280,
+    "guid_strategy": "sha256",
+    "link_pattern": null
+  },
+  "item_defaults": {
+    "author": "ops-bot",
+    "categories": ["incident"],
+    "thumbnail": "",
+    "link": "",
+    "extensions": {}
+  }
+}
