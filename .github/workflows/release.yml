@@ -29,7 +29,6 @@ jobs:
           }
 
       - name: Set up Python 3.12
-        if: steps.check_assets.outputs.prebuilt == 'false'
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -42,10 +41,10 @@ jobs:
           ./scripts/build.ps1 -Release
 
       - name: Build Python package
-        if: steps.check_assets.outputs.prebuilt == 'false'
         shell: pwsh
         run: |
-          .venv/Scripts/python -m build
+          python -m pip install build
+          python -m build
 
       - name: Collect Python package artifacts
         shell: pwsh
