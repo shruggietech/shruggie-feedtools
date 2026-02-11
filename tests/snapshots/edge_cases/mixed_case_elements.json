@@ -1,0 +1,59 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "A feed with mixed-case element names",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T12:00:00Z",
+    "link": "https://mixedcase.example.com",
+    "title": "Mixed Case Feed",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Description in mixed case tag.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "mc-001",
+      "guid_is_permalink": false,
+      "link": "https://mixedcase.example.com/item1",
+      "pub_date": "2026-02-10T12:00:00Z",
+      "thumbnail": "",
+      "title": "First Item With Uppercase Title",
+      "updated": "2026-02-10T12:00:00Z"
+    },
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Normal case description.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "mc-002",
+      "guid_is_permalink": false,
+      "link": "https://mixedcase.example.com/item2",
+      "pub_date": "2026-02-09T10:00:00Z",
+      "thumbnail": "",
+      "title": "Second Item With Normal Title",
+      "updated": "2026-02-09T10:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

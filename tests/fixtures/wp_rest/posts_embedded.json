@@ -1,0 +1,114 @@
+[
+  {
+    "id": 101,
+    "date": "2026-02-10T15:00:00",
+    "date_gmt": "2026-02-10T15:00:00",
+    "modified": "2026-02-10T16:00:00",
+    "modified_gmt": "2026-02-10T16:00:00",
+    "slug": "getting-started-with-feeds",
+    "status": "publish",
+    "type": "post",
+    "link": "https://wpsite.example.com/2026/02/getting-started-with-feeds/",
+    "title": {
+      "rendered": "Getting Started with Feeds"
+    },
+    "content": {
+      "rendered": "<p>A comprehensive guide to understanding and working with web feeds.</p>\n<img src=\"https://wpsite.example.com/wp-content/uploads/feeds-guide-thumb.jpg\" alt=\"Feeds Guide\" />\n<p>This post covers RSS, Atom, and JSON Feed formats in detail.</p>",
+      "protected": false
+    },
+    "excerpt": {
+      "rendered": "<p>A comprehensive guide to understanding and working with web feeds.</p>\n",
+      "protected": false
+    },
+    "author": 1,
+    "featured_media": 201,
+    "categories": [10, 20],
+    "tags": [30],
+    "guid": {
+      "rendered": "https://wpsite.example.com/?p=101"
+    },
+    "_links": {
+      "self": [{"href": "https://wpsite.example.com/wp-json/wp/v2/posts/101"}],
+      "author": [{"embeddable": true, "href": "https://wpsite.example.com/wp-json/wp/v2/users/1"}]
+    },
+    "_embedded": {
+      "author": [
+        {
+          "id": 1,
+          "name": "Sarah Editor",
+          "slug": "sarah-editor",
+          "link": "https://wpsite.example.com/author/sarah-editor/"
+        }
+      ],
+      "wp:featuredmedia": [
+        {
+          "id": 201,
+          "source_url": "https://wpsite.example.com/wp-content/uploads/feeds-featured.jpg",
+          "alt_text": "Feeds Featured Image",
+          "media_details": {
+            "width": 1200,
+            "height": 630
+          }
+        }
+      ],
+      "wp:term": [
+        [
+          {"id": 10, "name": "Technology", "slug": "technology"},
+          {"id": 20, "name": "Tutorials", "slug": "tutorials"}
+        ],
+        [
+          {"id": 30, "name": "RSS", "slug": "rss"}
+        ]
+      ]
+    }
+  },
+  {
+    "id": 102,
+    "date": "2026-02-09T10:30:00",
+    "date_gmt": "2026-02-09T10:30:00",
+    "modified": "2026-02-09T11:00:00",
+    "modified_gmt": "2026-02-09T11:00:00",
+    "slug": "python-data-validation",
+    "status": "publish",
+    "type": "post",
+    "link": "https://wpsite.example.com/2026/02/python-data-validation/",
+    "title": {
+      "rendered": "Python Data Validation with Pydantic"
+    },
+    "content": {
+      "rendered": "<p>Learn how to use Pydantic for robust data validation in Python applications.</p>",
+      "protected": false
+    },
+    "excerpt": {
+      "rendered": "<p>Learn how to use Pydantic for robust data validation.</p>\n",
+      "protected": false
+    },
+    "author": 2,
+    "featured_media": 0,
+    "categories": [10],
+    "tags": [],
+    "guid": {
+      "rendered": "https://wpsite.example.com/?p=102"
+    },
+    "_links": {
+      "self": [{"href": "https://wpsite.example.com/wp-json/wp/v2/posts/102"}],
+      "author": [{"embeddable": true, "href": "https://wpsite.example.com/wp-json/wp/v2/users/2"}]
+    },
+    "_embedded": {
+      "author": [
+        {
+          "id": 2,
+          "name": "Mike Developer",
+          "slug": "mike-developer",
+          "link": "https://wpsite.example.com/author/mike-developer/"
+        }
+      ],
+      "wp:term": [
+        [
+          {"id": 10, "name": "Technology", "slug": "technology"}
+        ],
+        []
+      ]
+    }
+  }
+]

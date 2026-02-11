@@ -1,0 +1,59 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "Testing UTF-8 BOM, HTML entities, and Unicode: é à ü ñ ß 中文 日本語 한국어 🚀",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T12:00:00Z",
+    "link": "https://encoding.example.com",
+    "title": "UTF-8 BOM & Encoding Test — Ünïcödé Fëëd",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "This item has Unicode: café, naïve, résumé, El Niño, Straße, ☃ snowman",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "enc-001",
+      "guid_is_permalink": false,
+      "link": "https://encoding.example.com/unicode-post",
+      "pub_date": "2026-02-10T12:00:00Z",
+      "thumbnail": "",
+      "title": "Ünïcödé Títlé with Émojis 🎉🐍",
+      "updated": "2026-02-10T12:00:00Z"
+    },
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Entities: &amp; &lt; &gt; &quot; and special: <b>bold</b>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "enc-002",
+      "guid_is_permalink": false,
+      "link": "https://encoding.example.com/entities-post",
+      "pub_date": "2026-02-09T08:00:00Z",
+      "thumbnail": "",
+      "title": "HTML Entities & CDATA",
+      "updated": "2026-02-09T08:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

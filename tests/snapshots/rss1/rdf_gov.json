@@ -1,0 +1,83 @@
+{
+  "feed": {
+    "author": "Open Data Team",
+    "categories": [],
+    "description": "Recently updated datasets from the Government Open Data Portal",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "en-us",
+    "last_updated": "2026-02-10T20:00:00Z",
+    "link": "https://data.gov.example",
+    "title": "Government Open Data Portal",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "Census Bureau",
+      "categories": [
+        "Demographics"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Annual population estimates for all US counties, 2025 vintage.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://data.gov.example/dataset/population-2025",
+      "guid_is_permalink": false,
+      "link": "https://data.gov.example/dataset/population-2025",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "2025 Population Estimates by County",
+      "updated": "2026-02-10T20:00:00Z"
+    },
+    {
+      "author": "NOAA",
+      "categories": [
+        "Weather",
+        "Environment"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Locations and metadata for all active weather stations.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://data.gov.example/dataset/weather-stations",
+      "guid_is_permalink": false,
+      "link": "https://data.gov.example/dataset/weather-stations",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "National Weather Station Directory",
+      "updated": "2026-02-09T12:00:00Z"
+    },
+    {
+      "author": "OMB",
+      "categories": [
+        "Finance"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "High-level budget allocations for fiscal year 2026.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://data.gov.example/dataset/budget-fy2026",
+      "guid_is_permalink": false,
+      "link": "https://data.gov.example/dataset/budget-fy2026",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "Federal Budget FY2026 Summary",
+      "updated": "2026-02-08T15:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss1",
+    "url": null
+  },
+  "status": "ok"
+}

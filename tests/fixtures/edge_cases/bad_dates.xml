@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Bad Dates Feed</title>
+    <link>https://baddates.example.com</link>
+    <description>Feed with 15+ date format variants</description>
+    <item>
+      <title>RFC 2822 Standard</title>
+      <link>https://baddates.example.com/1</link>
+      <guid>bd-001</guid>
+      <pubDate>Thu, 09 Feb 2026 12:00:00 GMT</pubDate>
+      <description>Standard RFC 2822 date.</description>
+    </item>
+    <item>
+      <title>RFC 2822 With Offset</title>
+      <link>https://baddates.example.com/2</link>
+      <guid>bd-002</guid>
+      <pubDate>Thu, 09 Feb 2026 07:00:00 -0500</pubDate>
+      <description>RFC 2822 with negative offset.</description>
+    </item>
+    <item>
+      <title>ISO 8601 UTC</title>
+      <link>https://baddates.example.com/3</link>
+      <guid>bd-003</guid>
+      <pubDate>2026-02-09T12:00:00Z</pubDate>
+      <description>ISO 8601 with Z suffix.</description>
+    </item>
+    <item>
+      <title>ISO 8601 With Offset</title>
+      <link>https://baddates.example.com/4</link>
+      <guid>bd-004</guid>
+      <pubDate>2026-02-09T17:00:00+05:00</pubDate>
+      <description>ISO 8601 with positive offset.</description>
+    </item>
+    <item>
+      <title>ISO 8601 No Timezone</title>
+      <link>https://baddates.example.com/5</link>
+      <guid>bd-005</guid>
+      <pubDate>2026-02-09T12:00:00</pubDate>
+      <description>ISO 8601 naive datetime.</description>
+    </item>
+    <item>
+      <title>Date Only YYYY-MM-DD</title>
+      <link>https://baddates.example.com/6</link>
+      <guid>bd-006</guid>
+      <pubDate>2026-02-09</pubDate>
+      <description>Date only, no time component.</description>
+    </item>
+    <item>
+      <title>Loose Format Spelled Month</title>
+      <link>https://baddates.example.com/7</link>
+      <guid>bd-007</guid>
+      <pubDate>February 9, 2026</pubDate>
+      <description>Loose date with spelled-out month.</description>
+    </item>
+    <item>
+      <title>Completely Invalid</title>
+      <link>https://baddates.example.com/8</link>
+      <guid>bd-008</guid>
+      <pubDate>not-a-date</pubDate>
+      <description>Completely unparseable date string.</description>
+    </item>
+    <item>
+      <title>Empty Date</title>
+      <link>https://baddates.example.com/9</link>
+      <guid>bd-009</guid>
+      <pubDate></pubDate>
+      <description>Empty pubDate element.</description>
+    </item>
+    <item>
+      <title>Missing Date Element</title>
+      <link>https://baddates.example.com/10</link>
+      <guid>bd-010</guid>
+      <description>No pubDate element at all.</description>
+    </item>
+    <item>
+      <title>Partial Date Month and Year</title>
+      <link>https://baddates.example.com/11</link>
+      <guid>bd-011</guid>
+      <pubDate>Feb 2026</pubDate>
+      <description>Partial date with month and year only.</description>
+    </item>
+    <item>
+      <title>WordPress REST Style</title>
+      <link>https://baddates.example.com/12</link>
+      <guid>bd-012</guid>
+      <pubDate>2026-02-09T12:00:00</pubDate>
+      <description>WordPress-style naive datetime.</description>
+    </item>
+    <item>
+      <title>Slash Separated Date</title>
+      <link>https://baddates.example.com/13</link>
+      <guid>bd-013</guid>
+      <pubDate>02/09/2026</pubDate>
+      <description>US-style slash-separated date.</description>
+    </item>
+    <item>
+      <title>Epoch As String</title>
+      <link>https://baddates.example.com/14</link>
+      <guid>bd-014</guid>
+      <pubDate>1770595200</pubDate>
+      <description>Unix epoch as a string.</description>
+    </item>
+    <item>
+      <title>Garbage Characters</title>
+      <link>https://baddates.example.com/15</link>
+      <guid>bd-015</guid>
+      <pubDate>@#$%^&amp;*()</pubDate>
+      <description>Total garbage date value.</description>
+    </item>
+    <item>
+      <title>Timezone Abbreviation</title>
+      <link>https://baddates.example.com/16</link>
+      <guid>bd-016</guid>
+      <pubDate>Thu, 09 Feb 2026 12:00:00 EST</pubDate>
+      <description>Date with timezone abbreviation.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Missing Fields Feed</title>
+    <link>https://missing.example.com</link>
+    <description></description>
+    <item>
+      <title>Bare Minimum Item</title>
+      <link>https://missing.example.com/item1</link>
+    </item>
+  </channel>
+</rss>

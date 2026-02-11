@@ -1,0 +1,76 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "A minimal RSS 2.0 feed for testing",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "en-us",
+    "last_updated": "2026-02-09T12:00:00Z",
+    "link": "https://example.com",
+    "title": "Minimal Test Feed",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "This is the first post in the minimal feed.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://example.com/first-post",
+      "guid_is_permalink": false,
+      "link": "https://example.com/first-post",
+      "pub_date": "2026-02-09T12:00:00Z",
+      "thumbnail": "",
+      "title": "First Post",
+      "updated": "2026-02-09T12:00:00Z"
+    },
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "This is the second post.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://example.com/second-post",
+      "guid_is_permalink": false,
+      "link": "https://example.com/second-post",
+      "pub_date": "2026-02-08T10:00:00Z",
+      "thumbnail": "",
+      "title": "Second Post",
+      "updated": "2026-02-08T10:00:00Z"
+    },
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "This is the third post.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "post-003",
+      "guid_is_permalink": false,
+      "link": "https://example.com/third-post",
+      "pub_date": "2026-02-07T08:00:00Z",
+      "thumbnail": "",
+      "title": "Third Post",
+      "updated": "2026-02-07T08:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

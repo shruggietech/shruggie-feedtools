@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+>
+  <channel>
+    <title>Tech Talk Podcast</title>
+    <link>https://techtalk.example.com</link>
+    <description>Weekly conversations about technology, programming, and open source.</description>
+    <language>en-us</language>
+    <lastBuildDate>Fri, 07 Feb 2026 18:00:00 GMT</lastBuildDate>
+    <itunes:author>Tech Talk Media</itunes:author>
+    <itunes:image href="https://techtalk.example.com/artwork.jpg" />
+    <itunes:category text="Technology" />
+    <itunes:explicit>no</itunes:explicit>
+    <itunes:owner>
+      <itunes:name>Tech Talk Media</itunes:name>
+      <itunes:email>podcasts@techtalk.example.com</itunes:email>
+    </itunes:owner>
+    <item>
+      <title>Episode 42: The Future of RSS</title>
+      <link>https://techtalk.example.com/episodes/42</link>
+      <guid isPermaLink="false">techtalk-ep-042</guid>
+      <pubDate>Fri, 07 Feb 2026 18:00:00 GMT</pubDate>
+      <description>We discuss the resurgence of RSS feeds and their role in the modern web.</description>
+      <content:encoded><![CDATA[<p>We discuss the resurgence of RSS feeds and their role in the modern web.</p><p>Show notes and links at techtalk.example.com/episodes/42</p>]]></content:encoded>
+      <enclosure url="https://media.techtalk.example.com/episodes/ep042.mp3" type="audio/mpeg" length="45678912" />
+      <itunes:duration>01:15:30</itunes:duration>
+      <itunes:explicit>no</itunes:explicit>
+      <itunes:image href="https://techtalk.example.com/episodes/42/art.jpg" />
+      <itunes:author>Alice Johnson &amp; Bob Williams</itunes:author>
+      <itunes:episode>42</itunes:episode>
+      <itunes:episodeType>full</itunes:episodeType>
+    </item>
+    <item>
+      <title>Episode 41: Python Packaging in 2026</title>
+      <link>https://techtalk.example.com/episodes/41</link>
+      <guid isPermaLink="false">techtalk-ep-041</guid>
+      <pubDate>Fri, 31 Jan 2026 18:00:00 GMT</pubDate>
+      <description>Breaking down the current state of Python packaging and dependency management.</description>
+      <enclosure url="https://media.techtalk.example.com/episodes/ep041.mp3" type="audio/mpeg" length="38901234" />
+      <itunes:duration>01:02:45</itunes:duration>
+      <itunes:explicit>no</itunes:explicit>
+      <itunes:author>Alice Johnson</itunes:author>
+      <itunes:episode>41</itunes:episode>
+      <itunes:episodeType>full</itunes:episodeType>
+    </item>
+  </channel>
+</rss>

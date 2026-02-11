@@ -1,0 +1,76 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T08:00:00Z",
+    "link": "https://broken.example.com",
+    "title": "Malformed Feed Test",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "This item has an unparseable date.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "item-001",
+      "guid_is_permalink": false,
+      "link": "https://broken.example.com/item1",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "Good Item With Bad Date",
+      "updated": null
+    },
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "item-002",
+      "guid_is_permalink": false,
+      "link": "https://broken.example.com/item2",
+      "pub_date": "2026-02-11T10:00:00Z",
+      "thumbnail": "",
+      "title": "Item With Missing Closing Tag",
+      "updated": "2026-02-11T10:00:00Z"
+    },
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Contains &amp; and <b>bold</b> text",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "item-004",
+      "guid_is_permalink": false,
+      "link": "https://broken.example.com/item4",
+      "pub_date": "2026-02-09T06:00:00Z",
+      "thumbnail": "",
+      "title": "Item with HTML entities & special <chars>",
+      "updated": "2026-02-09T06:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

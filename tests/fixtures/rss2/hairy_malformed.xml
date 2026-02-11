@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Malformed Feed Test</title>
+    <link>https://broken.example.com</link>
+    <description>This feed has intentional problems</description>
+    <item>
+      <title>Good Item With Bad Date</title>
+      <link>https://broken.example.com/item1</link>
+      <guid>item-001</guid>
+      <pubDate>not-a-real-date</pubDate>
+      <description>This item has an unparseable date.</description>
+    </item>
+    <item>
+      <title>Item With Missing Closing Tag</title>
+      <link>https://broken.example.com/item2</link>
+      <guid>item-002</guid>
+      <pubDate>Wed, 11 Feb 2026 10:00:00 GMT</pubDate>
+      <description>This item tests parser tolerance.
+    </item>
+    <item>
+      <title></title>
+      <link>https://broken.example.com/item3</link>
+      <guid>item-003</guid>
+      <pubDate>Tue, 10 Feb 2026 08:00:00 GMT</pubDate>
+      <description></description>
+    </item>
+    <item>
+      <title>Item with HTML entities &amp; special &lt;chars&gt;</title>
+      <link>https://broken.example.com/item4</link>
+      <guid>item-004</guid>
+      <pubDate>Mon, 09 Feb 2026 06:00:00 GMT</pubDate>
+      <description>Contains &amp;amp; and &lt;b&gt;bold&lt;/b&gt; text</description>
+    </item>
+  </channel>
+</rss>

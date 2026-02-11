@@ -1,0 +1,59 @@
+{
+  "feed": {
+    "author": "shruggietech",
+    "categories": [],
+    "description": "",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T16:00:00Z",
+    "link": "https://github.com/shruggietech/shruggie-feedtools/releases",
+    "title": "shruggietech/shruggie-feedtools Releases",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "wthompson",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p>First public release of shruggie-feedtools.</p>\n<h3>Features</h3>\n<ul>\n<li>Parse RSS 2.0, Atom 1.0, RSS 1.0, JSON Feed, and WordPress REST</li>\n<li>Normalize output to a single JSON schema</li>\n<li>CLI and GUI executables for Windows</li>\n</ul>",
+      "description": "<p>First public release of shruggie-feedtools.</p>\n<h3>Features</h3>\n<ul>\n<li>Parse RSS 2.0, Atom 1.0, RSS 1.0, JSON Feed, and WordPress REST</li>\n<li>Normalize output to a single JSON schema</li>\n<li>CLI and GUI executables for Windows</li>\n</ul>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "tag:github.com,2026:Repository/12345/v0.1.0",
+      "guid_is_permalink": true,
+      "link": "https://github.com/shruggietech/shruggie-feedtools/releases/tag/v0.1.0",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "v0.1.0 — Initial Release",
+      "updated": "2026-02-10T16:00:00Z"
+    },
+    {
+      "author": "wthompson",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p>Alpha pre-release for early testing.</p>\n<ul>\n<li>Basic RSS 2.0 parsing</li>\n<li>Schema draft</li>\n</ul>",
+      "description": "<p>Alpha pre-release for early testing.</p>\n<ul>\n<li>Basic RSS 2.0 parsing</li>\n<li>Schema draft</li>\n</ul>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "tag:github.com,2026:Repository/12345/v0.0.1-alpha",
+      "guid_is_permalink": true,
+      "link": "https://github.com/shruggietech/shruggie-feedtools/releases/tag/v0.0.1-alpha",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "v0.0.1-alpha — Pre-Release",
+      "updated": "2026-01-15T10:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "atom10",
+    "url": null
+  },
+  "status": "ok"
+}

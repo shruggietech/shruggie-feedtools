@@ -1,0 +1,69 @@
+{
+  "feed": {
+    "author": "TechChannel",
+    "categories": [],
+    "description": "",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T14:00:00Z",
+    "link": "https://www.youtube.com/channel/UC_TECHCHANNEL",
+    "title": "TechChannel",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "TechChannel",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "In this tutorial, we build a complete feed parser and normalizer in Python.",
+      "enclosures": [],
+      "extensions": {
+        "yt": {
+          "channelId": "UC_TECHCHANNEL",
+          "videoId": "dQw4w9WgXcQ"
+        }
+      },
+      "guid": "yt:video:dQw4w9WgXcQ",
+      "guid_is_permalink": true,
+      "link": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "pub_date": "2026-02-10T14:00:00Z",
+      "thumbnail": "https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg",
+      "title": "Building a Feed Parser from Scratch",
+      "updated": "2026-02-10T14:00:00Z"
+    },
+    {
+      "author": "TechChannel",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Learn how to use Pydantic v2 for data validation in Python projects.",
+      "enclosures": [],
+      "extensions": {
+        "yt": {
+          "channelId": "UC_TECHCHANNEL",
+          "videoId": "xYz123AbCdE"
+        }
+      },
+      "guid": "yt:video:xYz123AbCdE",
+      "guid_is_permalink": true,
+      "link": "https://www.youtube.com/watch?v=xYz123AbCdE",
+      "pub_date": "2026-02-05T10:00:00Z",
+      "thumbnail": "https://i.ytimg.com/vi/xYz123AbCdE/hqdefault.jpg",
+      "title": "Python Pydantic v2 Tutorial",
+      "updated": "2026-02-06T12:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "atom10",
+    "url": null
+  },
+  "status": "ok"
+}

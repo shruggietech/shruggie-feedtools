@@ -1,0 +1,42 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": null,
+    "link": "https://missing.example.com",
+    "title": "Missing Fields Feed",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://missing.example.com/item1",
+      "guid_is_permalink": false,
+      "link": "https://missing.example.com/item1",
+      "pub_date": null,
+      "thumbnail": "",
+      "title": "Bare Minimum Item",
+      "updated": null
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

@@ -1,0 +1,85 @@
+{
+  "feed": {
+    "author": "Tech Talk Media",
+    "categories": [
+      "Technology"
+    ],
+    "description": "Weekly conversations about technology, programming, and open source.",
+    "extensions": {},
+    "generator": "",
+    "image": "https://techtalk.example.com/artwork.jpg",
+    "language": "en-us",
+    "last_updated": "2026-02-07T18:00:00Z",
+    "link": "https://techtalk.example.com",
+    "title": "Tech Talk Podcast",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "Alice Johnson & Bob Williams",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p>We discuss the resurgence of RSS feeds and their role in the modern web.</p><p>Show notes and links at techtalk.example.com/episodes/42</p>",
+      "description": "We discuss the resurgence of RSS feeds and their role in the modern web.",
+      "enclosures": [
+        {
+          "length": 45678912,
+          "type": "audio/mpeg",
+          "url": "https://media.techtalk.example.com/episodes/ep042.mp3"
+        }
+      ],
+      "extensions": {
+        "itunes": {
+          "duration": "01:15:30",
+          "episode": "42",
+          "episodeType": "full"
+        }
+      },
+      "guid": "techtalk-ep-042",
+      "guid_is_permalink": false,
+      "link": "https://techtalk.example.com/episodes/42",
+      "pub_date": "2026-02-07T18:00:00Z",
+      "thumbnail": "",
+      "title": "Episode 42: The Future of RSS",
+      "updated": "2026-02-07T18:00:00Z"
+    },
+    {
+      "author": "Alice Johnson",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "Breaking down the current state of Python packaging and dependency management.",
+      "enclosures": [
+        {
+          "length": 38901234,
+          "type": "audio/mpeg",
+          "url": "https://media.techtalk.example.com/episodes/ep041.mp3"
+        }
+      ],
+      "extensions": {
+        "itunes": {
+          "duration": "01:02:45",
+          "episode": "41",
+          "episodeType": "full"
+        }
+      },
+      "guid": "techtalk-ep-041",
+      "guid_is_permalink": false,
+      "link": "https://techtalk.example.com/episodes/41",
+      "pub_date": "2026-01-31T18:00:00Z",
+      "thumbnail": "",
+      "title": "Episode 41: Python Packaging in 2026",
+      "updated": "2026-01-31T18:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

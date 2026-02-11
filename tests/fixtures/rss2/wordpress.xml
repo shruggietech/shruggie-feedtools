@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:content="http://purl.org/rss/1.0/modules/content/"
+  xmlns:slash="http://purl.org/rss/1.0/modules/slash/"
+  xmlns:sy="http://purl.org/rss/1.0/modules/syndication/"
+>
+  <channel>
+    <title>WordPress Dev Blog</title>
+    <link>https://devblog.example.com</link>
+    <description>A WordPress development blog for testing</description>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 10 Feb 2026 15:00:00 GMT</lastBuildDate>
+    <generator>WordPress 6.7</generator>
+    <sy:updatePeriod>hourly</sy:updatePeriod>
+    <sy:updateFrequency>1</sy:updateFrequency>
+    <image>
+      <url>https://devblog.example.com/logo.png</url>
+      <title>WordPress Dev Blog</title>
+      <link>https://devblog.example.com</link>
+    </image>
+    <item>
+      <title>Getting Started with Python Feeds</title>
+      <link>https://devblog.example.com/2026/02/python-feeds/</link>
+      <guid isPermaLink="false">https://devblog.example.com/?p=101</guid>
+      <pubDate>Mon, 10 Feb 2026 15:00:00 GMT</pubDate>
+      <dc:creator><![CDATA[Jane Smith]]></dc:creator>
+      <category><![CDATA[Python]]></category>
+      <category><![CDATA[Tutorials]]></category>
+      <category><![CDATA[RSS]]></category>
+      <description><![CDATA[A quick guide to parsing feeds in Python using modern libraries.]]></description>
+      <content:encoded><![CDATA[<p>A quick guide to parsing feeds in Python using modern libraries.</p>
+<p>This tutorial covers feedparser, httpx, and Pydantic for building a robust feed parsing pipeline.</p>
+<img src="https://devblog.example.com/wp-content/uploads/python-feeds-thumb.jpg" alt="Python Feeds" />
+<p>Stay tuned for more in this series.</p>]]></content:encoded>
+      <slash:comments>12</slash:comments>
+    </item>
+    <item>
+      <title>Advanced RSS Namespaces Explained</title>
+      <link>https://devblog.example.com/2026/02/rss-namespaces/</link>
+      <guid isPermaLink="false">https://devblog.example.com/?p=102</guid>
+      <pubDate>Sun, 09 Feb 2026 09:30:00 GMT</pubDate>
+      <dc:creator><![CDATA[John Doe]]></dc:creator>
+      <category><![CDATA[RSS]]></category>
+      <category><![CDATA[Standards]]></category>
+      <description><![CDATA[Understanding Dublin Core, Content Module, and other RSS namespace extensions.]]></description>
+      <content:encoded><![CDATA[<p>Understanding Dublin Core, Content Module, and other RSS namespace extensions.</p>
+<p>Namespaces allow RSS to be extended without breaking backward compatibility. This post explores the most common ones you'll encounter in the wild.</p>]]></content:encoded>
+      <slash:comments>5</slash:comments>
+    </item>
+    <item>
+      <title>WordPress REST API Deep Dive</title>
+      <link>https://devblog.example.com/2026/02/wp-rest-api/</link>
+      <guid isPermaLink="false">https://devblog.example.com/?p=103</guid>
+      <pubDate>Sat, 08 Feb 2026 14:00:00 GMT</pubDate>
+      <dc:creator><![CDATA[Jane Smith]]></dc:creator>
+      <category><![CDATA[WordPress]]></category>
+      <category><![CDATA[API]]></category>
+      <category><![CDATA[Tutorials]]></category>
+      <description><![CDATA[Exploring the WordPress REST API for automated content workflows.]]></description>
+      <content:encoded><![CDATA[<p>Exploring the WordPress REST API for automated content workflows.</p>
+<img src="https://devblog.example.com/wp-content/uploads/wp-rest-thumb.jpg" alt="WP REST API" />
+<p>The WordPress REST API opens up powerful possibilities for integrating your WordPress site with external tools and services.</p>]]></content:encoded>
+      <slash:comments>8</slash:comments>
+    </item>
+  </channel>
+</rss>

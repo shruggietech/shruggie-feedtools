@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Minimal Test Feed</title>
+    <link>https://example.com</link>
+    <description>A minimal RSS 2.0 feed for testing</description>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 09 Feb 2026 12:00:00 GMT</lastBuildDate>
+    <item>
+      <title>First Post</title>
+      <link>https://example.com/first-post</link>
+      <guid>https://example.com/first-post</guid>
+      <pubDate>Thu, 09 Feb 2026 12:00:00 GMT</pubDate>
+      <description>This is the first post in the minimal feed.</description>
+    </item>
+    <item>
+      <title>Second Post</title>
+      <link>https://example.com/second-post</link>
+      <guid isPermaLink="true">https://example.com/second-post</guid>
+      <pubDate>Wed, 08 Feb 2026 10:00:00 GMT</pubDate>
+      <description>This is the second post.</description>
+    </item>
+    <item>
+      <title>Third Post</title>
+      <link>https://example.com/third-post</link>
+      <guid isPermaLink="false">post-003</guid>
+      <pubDate>Tue, 07 Feb 2026 08:00:00 GMT</pubDate>
+      <description>This is the third post.</description>
+    </item>
+  </channel>
+</rss>

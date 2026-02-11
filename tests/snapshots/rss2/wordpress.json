@@ -1,0 +1,92 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "A WordPress development blog for testing",
+    "extensions": {
+      "sy": {
+        "updatefrequency": "1",
+        "updateperiod": "hourly"
+      }
+    },
+    "generator": "WordPress 6.7",
+    "image": "https://devblog.example.com/logo.png",
+    "language": "en-us",
+    "last_updated": "2026-02-10T15:00:00Z",
+    "link": "https://devblog.example.com",
+    "title": "WordPress Dev Blog",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "Jane Smith",
+      "categories": [
+        "Python",
+        "Tutorials",
+        "RSS"
+      ],
+      "comments_count": 12,
+      "comments_url": null,
+      "content": "<p>A quick guide to parsing feeds in Python using modern libraries.</p>\n<p>This tutorial covers feedparser, httpx, and Pydantic for building a robust feed parsing pipeline.</p>\n<img alt=\"Python Feeds\" src=\"https://devblog.example.com/wp-content/uploads/python-feeds-thumb.jpg\" />\n<p>Stay tuned for more in this series.</p>",
+      "description": "A quick guide to parsing feeds in Python using modern libraries.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://devblog.example.com/?p=101",
+      "guid_is_permalink": false,
+      "link": "https://devblog.example.com/2026/02/python-feeds/",
+      "pub_date": "2026-02-10T15:00:00Z",
+      "thumbnail": "https://devblog.example.com/wp-content/uploads/python-feeds-thumb.jpg",
+      "title": "Getting Started with Python Feeds",
+      "updated": "2026-02-10T15:00:00Z"
+    },
+    {
+      "author": "John Doe",
+      "categories": [
+        "RSS",
+        "Standards"
+      ],
+      "comments_count": 5,
+      "comments_url": null,
+      "content": "<p>Understanding Dublin Core, Content Module, and other RSS namespace extensions.</p>\n<p>Namespaces allow RSS to be extended without breaking backward compatibility. This post explores the most common ones you'll encounter in the wild.</p>",
+      "description": "Understanding Dublin Core, Content Module, and other RSS namespace extensions.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://devblog.example.com/?p=102",
+      "guid_is_permalink": false,
+      "link": "https://devblog.example.com/2026/02/rss-namespaces/",
+      "pub_date": "2026-02-09T09:30:00Z",
+      "thumbnail": "",
+      "title": "Advanced RSS Namespaces Explained",
+      "updated": "2026-02-09T09:30:00Z"
+    },
+    {
+      "author": "Jane Smith",
+      "categories": [
+        "WordPress",
+        "API",
+        "Tutorials"
+      ],
+      "comments_count": 8,
+      "comments_url": null,
+      "content": "<p>Exploring the WordPress REST API for automated content workflows.</p>\n<img alt=\"WP REST API\" src=\"https://devblog.example.com/wp-content/uploads/wp-rest-thumb.jpg\" />\n<p>The WordPress REST API opens up powerful possibilities for integrating your WordPress site with external tools and services.</p>",
+      "description": "Exploring the WordPress REST API for automated content workflows.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "https://devblog.example.com/?p=103",
+      "guid_is_permalink": false,
+      "link": "https://devblog.example.com/2026/02/wp-rest-api/",
+      "pub_date": "2026-02-08T14:00:00Z",
+      "thumbnail": "https://devblog.example.com/wp-content/uploads/wp-rest-thumb.jpg",
+      "title": "WordPress REST API Deep Dive",
+      "updated": "2026-02-08T14:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

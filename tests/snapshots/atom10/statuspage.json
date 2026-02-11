@@ -1,0 +1,59 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T18:30:00Z",
+    "link": "https://status.example.com",
+    "title": "Example Service Status",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "Example Status",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p><strong>Resolved</strong> — The issue has been resolved. All services are operational.</p>\n<p><small>Feb 10, 2026 18:30 UTC</small></p>\n<p><strong>Monitoring</strong> — A fix has been deployed and we are monitoring.</p>\n<p><small>Feb 10, 2026 17:00 UTC</small></p>\n<p><strong>Investigating</strong> — We are investigating reports of elevated error rates on the API gateway.</p>\n<p><small>Feb 10, 2026 15:00 UTC</small></p>",
+      "description": "<p><strong>Resolved</strong> — The issue has been resolved. All services are operational.</p>\n<p><small>Feb 10, 2026 18:30 UTC</small></p>\n<p><strong>Monitoring</strong> — A fix has been deployed and we are monitoring.</p>\n<p><small>Feb 10, 2026 17:00 UTC</small></p>\n<p><strong>Investigating</strong> — We are investigating reports of elevated error rates on the API gateway.</p>\n<p><small>Feb 10, 2026 15:00 UTC</small></p>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "tag:status.example.com,2026:incident/5001",
+      "guid_is_permalink": true,
+      "link": "https://status.example.com/incidents/5001",
+      "pub_date": "2026-02-10T15:00:00Z",
+      "thumbnail": "",
+      "title": "API Gateway Partial Outage",
+      "updated": "2026-02-10T18:30:00Z"
+    },
+    {
+      "author": "Example Status",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p><strong>Completed</strong> — Scheduled maintenance is complete.</p>\n<p><small>Feb 8, 2026 06:00 UTC</small></p>\n<p><strong>In Progress</strong> — Maintenance is underway. Brief interruptions to database services expected.</p>\n<p><small>Feb 8, 2026 02:00 UTC</small></p>",
+      "description": "<p><strong>Completed</strong> — Scheduled maintenance is complete.</p>\n<p><small>Feb 8, 2026 06:00 UTC</small></p>\n<p><strong>In Progress</strong> — Maintenance is underway. Brief interruptions to database services expected.</p>\n<p><small>Feb 8, 2026 02:00 UTC</small></p>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "tag:status.example.com,2026:incident/5000",
+      "guid_is_permalink": true,
+      "link": "https://status.example.com/incidents/5000",
+      "pub_date": "2026-02-08T02:00:00Z",
+      "thumbnail": "",
+      "title": "Scheduled Maintenance — Database Cluster",
+      "updated": "2026-02-08T06:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "atom10",
+    "url": null
+  },
+  "status": "ok"
+}

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:media="http://search.yahoo.com/mrss/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+>
+  <channel>
+    <title>r/Python — Hot Posts</title>
+    <link>https://www.reddit.com/r/Python/</link>
+    <description>News about the programming language Python</description>
+    <item>
+      <title>I built a feed parser &amp; normalizer in Python</title>
+      <link>https://www.reddit.com/r/Python/comments/abc123/i_built_a_feed_parser/</link>
+      <guid>t3_abc123</guid>
+      <pubDate>Mon, 10 Feb 2026 14:30:00 GMT</pubDate>
+      <dc:creator>/u/feeddev42</dc:creator>
+      <description>&lt;!-- SC_OFF --&gt;&lt;div class="md"&gt;&lt;p&gt;Check out my new project for normalizing RSS, Atom, and JSON feeds.&lt;/p&gt;&lt;/div&gt;&lt;!-- SC_ON --&gt;</description>
+      <media:thumbnail url="https://preview.redd.it/thumb-abc123.jpg?width=640&amp;format=pjpg" />
+      <media:content url="https://preview.redd.it/full-abc123.jpg?width=1080&amp;format=pjpg" medium="image" />
+      <category>Python</category>
+    </item>
+    <item>
+      <title>What&#x27;s your favorite Python 3.12+ feature?</title>
+      <link>https://www.reddit.com/r/Python/comments/def456/whats_your_favorite/</link>
+      <guid>t3_def456</guid>
+      <pubDate>Sun, 09 Feb 2026 20:15:00 GMT</pubDate>
+      <dc:creator>/u/pythonista99</dc:creator>
+      <description>&lt;div class="md"&gt;&lt;p&gt;Type parameter syntax is amazing. What else are people using?&lt;/p&gt;&lt;/div&gt;</description>
+      <media:thumbnail url="https://www.redditstatic.com/desktop2x/img/default-thumb.png" />
+      <category>Python</category>
+      <category>Discussion</category>
+    </item>
+    <item>
+      <title>PEP 750: Template Strings &#x2014; Accepted!</title>
+      <link>https://www.reddit.com/r/Python/comments/ghi789/pep_750_template_strings/</link>
+      <guid>t3_ghi789</guid>
+      <pubDate>Sat, 08 Feb 2026 11:00:00 GMT</pubDate>
+      <dc:creator>/u/pep_watcher</dc:creator>
+      <description>&lt;div class="md"&gt;&lt;p&gt;Template strings are coming to Python! Here&amp;#39;s what it means.&lt;/p&gt;&lt;/div&gt;</description>
+      <media:thumbnail url="https://preview.redd.it/thumb-ghi789.png?width=640&amp;format=png" />
+      <media:content url="https://preview.redd.it/full-ghi789.png?width=1200&amp;format=png" medium="image" />
+      <category>Python</category>
+      <category>News</category>
+    </item>
+  </channel>
+</rss>

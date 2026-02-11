@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"
+      xmlns:yt="http://www.youtube.com/xml/schemas/2015"
+      xmlns:media="http://search.yahoo.com/mrss/">
+  <title>TechChannel</title>
+  <link rel="alternate" href="https://www.youtube.com/channel/UC_TECHCHANNEL" />
+  <link rel="self" href="https://www.youtube.com/feeds/videos.xml?channel_id=UC_TECHCHANNEL" />
+  <id>yt:channel:UC_TECHCHANNEL</id>
+  <author>
+    <name>TechChannel</name>
+    <uri>https://www.youtube.com/channel/UC_TECHCHANNEL</uri>
+  </author>
+  <updated>2026-02-10T14:00:00+00:00</updated>
+  <entry>
+    <id>yt:video:dQw4w9WgXcQ</id>
+    <yt:videoId>dQw4w9WgXcQ</yt:videoId>
+    <yt:channelId>UC_TECHCHANNEL</yt:channelId>
+    <title>Building a Feed Parser from Scratch</title>
+    <link rel="alternate" href="https://www.youtube.com/watch?v=dQw4w9WgXcQ" />
+    <author>
+      <name>TechChannel</name>
+      <uri>https://www.youtube.com/channel/UC_TECHCHANNEL</uri>
+    </author>
+    <published>2026-02-10T14:00:00+00:00</published>
+    <updated>2026-02-10T14:00:00+00:00</updated>
+    <media:group>
+      <media:title>Building a Feed Parser from Scratch</media:title>
+      <media:content url="https://www.youtube.com/v/dQw4w9WgXcQ?version=3" type="application/x-shockwave-flash" width="640" height="390" />
+      <media:thumbnail url="https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg" width="480" height="360" />
+      <media:description>In this tutorial, we build a complete feed parser and normalizer in Python.</media:description>
+    </media:group>
+  </entry>
+  <entry>
+    <id>yt:video:xYz123AbCdE</id>
+    <yt:videoId>xYz123AbCdE</yt:videoId>
+    <yt:channelId>UC_TECHCHANNEL</yt:channelId>
+    <title>Python Pydantic v2 Tutorial</title>
+    <link rel="alternate" href="https://www.youtube.com/watch?v=xYz123AbCdE" />
+    <author>
+      <name>TechChannel</name>
+      <uri>https://www.youtube.com/channel/UC_TECHCHANNEL</uri>
+    </author>
+    <published>2026-02-05T10:00:00+00:00</published>
+    <updated>2026-02-06T12:00:00+00:00</updated>
+    <media:group>
+      <media:title>Python Pydantic v2 Tutorial</media:title>
+      <media:content url="https://www.youtube.com/v/xYz123AbCdE?version=3" type="application/x-shockwave-flash" width="640" height="390" />
+      <media:thumbnail url="https://i.ytimg.com/vi/xYz123AbCdE/hqdefault.jpg" width="480" height="360" />
+      <media:description>Learn how to use Pydantic v2 for data validation in Python projects.</media:description>
+    </media:group>
+  </entry>
+</feed>

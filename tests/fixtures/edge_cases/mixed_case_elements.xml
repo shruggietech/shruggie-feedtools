@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <Title>Mixed Case Feed</Title>
+    <LINK>https://mixedcase.example.com</LINK>
+    <description>A feed with mixed-case element names</description>
+    <item>
+      <TITLE>First Item With Uppercase Title</TITLE>
+      <link>https://mixedcase.example.com/item1</link>
+      <guid>mc-001</guid>
+      <pubDate>Mon, 10 Feb 2026 12:00:00 GMT</pubDate>
+      <Description>Description in mixed case tag.</Description>
+    </item>
+    <item>
+      <title>Second Item With Normal Title</title>
+      <Link>https://mixedcase.example.com/item2</Link>
+      <guid>mc-002</guid>
+      <PubDate>Sun, 09 Feb 2026 10:00:00 GMT</PubDate>
+      <description>Normal case description.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:custom_dc="http://purl.org/dc/elements/1.1/"
+  xmlns:cnt="http://purl.org/rss/1.0/modules/content/"
+  xmlns:podcast="http://www.itunes.com/dtds/podcast-1.0.dtd"
+>
+  <channel>
+    <title>Custom Namespace Prefixes Feed</title>
+    <link>https://customns.example.com</link>
+    <description>This feed uses non-standard namespace prefixes</description>
+    <item>
+      <title>Post With Custom Prefixes</title>
+      <link>https://customns.example.com/post1</link>
+      <guid>cns-001</guid>
+      <pubDate>Mon, 10 Feb 2026 12:00:00 GMT</pubDate>
+      <custom_dc:creator>Custom Author</custom_dc:creator>
+      <cnt:encoded><![CDATA[<p>Content using non-standard prefix <code>cnt:</code> instead of <code>content:</code>.</p>]]></cnt:encoded>
+      <podcast:duration>00:45:30</podcast:duration>
+      <podcast:explicit>no</podcast:explicit>
+      <description>A post that uses custom namespace prefixes.</description>
+    </item>
+    <item>
+      <title>Another Custom Prefix Post</title>
+      <link>https://customns.example.com/post2</link>
+      <guid>cns-002</guid>
+      <pubDate>Sun, 09 Feb 2026 08:00:00 GMT</pubDate>
+      <custom_dc:creator>Another Author</custom_dc:creator>
+      <cnt:encoded><![CDATA[<p>More content with non-standard prefixes.</p>]]></cnt:encoded>
+      <description>Another post with custom prefixes.</description>
+    </item>
+  </channel>
+</rss>

@@ -1,0 +1,77 @@
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "JSON Feed Example",
+  "home_page_url": "https://jsonfeed.example.com",
+  "feed_url": "https://jsonfeed.example.com/feed.json",
+  "description": "A demonstration JSON Feed with all standard fields.",
+  "icon": "https://jsonfeed.example.com/icon-512.png",
+  "favicon": "https://jsonfeed.example.com/favicon.ico",
+  "language": "en-US",
+  "authors": [
+    {
+      "name": "Alice Feed",
+      "url": "https://alice.example.com",
+      "avatar": "https://alice.example.com/avatar.jpg"
+    }
+  ],
+  "items": [
+    {
+      "id": "jf-item-001",
+      "url": "https://jsonfeed.example.com/2026/02/first-post",
+      "title": "Welcome to JSON Feed",
+      "content_html": "<p>This is the <strong>first post</strong> in our JSON Feed. It supports full HTML content.</p>",
+      "content_text": "This is the first post in our JSON Feed. It supports full HTML content.",
+      "summary": "A short summary of the first post.",
+      "image": "https://jsonfeed.example.com/images/post1-hero.jpg",
+      "banner_image": "https://jsonfeed.example.com/images/post1-banner.jpg",
+      "date_published": "2026-02-10T12:00:00Z",
+      "date_modified": "2026-02-10T14:00:00Z",
+      "authors": [
+        {
+          "name": "Alice Feed"
+        }
+      ],
+      "tags": [
+        "json-feed",
+        "introduction",
+        "web"
+      ],
+      "attachments": [
+        {
+          "url": "https://jsonfeed.example.com/audio/episode1.mp3",
+          "mime_type": "audio/mpeg",
+          "title": "Episode 1 Audio",
+          "size_in_bytes": 12345678,
+          "duration_in_seconds": 3600
+        }
+      ]
+    },
+    {
+      "id": "jf-item-002",
+      "url": "https://jsonfeed.example.com/2026/02/second-post",
+      "title": "Advanced JSON Feed Features",
+      "content_html": "<p>Exploring attachments, tags, and multiple authors in JSON Feed 1.1.</p>",
+      "summary": "An overview of advanced JSON Feed 1.1 features.",
+      "date_published": "2026-02-09T09:00:00Z",
+      "authors": [
+        {
+          "name": "Bob Writer"
+        }
+      ],
+      "tags": [
+        "json-feed",
+        "advanced"
+      ]
+    },
+    {
+      "id": "jf-item-003",
+      "url": "https://jsonfeed.example.com/2026/02/text-only",
+      "title": "Text-Only Post",
+      "content_text": "This post uses content_text instead of content_html. No HTML here.",
+      "date_published": "2026-02-08T17:30:00Z",
+      "tags": [
+        "text"
+      ]
+    }
+  ]
+}

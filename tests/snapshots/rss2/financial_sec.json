@@ -1,0 +1,76 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "Recent filings from the SEC EDGAR system",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "en-us",
+    "last_updated": "2026-02-10T21:00:00Z",
+    "link": "https://www.sec.gov/cgi-bin/browse-edgar",
+    "title": "SEC EDGAR Company Filings",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "ACME Corp",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "urn:sec:filing:0001234567-26-000001",
+      "guid_is_permalink": false,
+      "link": "https://www.sec.gov/Archives/edgar/data/0001234567/000123456726000001/0001234567-26-000001-index.htm",
+      "pub_date": "2026-02-10T21:00:00Z",
+      "thumbnail": "",
+      "title": "10-K - ACME Corp (0001234567) (Filer)",
+      "updated": "2026-02-10T21:00:00Z"
+    },
+    {
+      "author": "Widget Industries Inc",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "urn:sec:filing:0009876543-26-000042",
+      "guid_is_permalink": false,
+      "link": "https://www.sec.gov/Archives/edgar/data/0009876543/000987654326000042/0009876543-26-000042-index.htm",
+      "pub_date": "2026-02-10T00:00:00Z",
+      "thumbnail": "",
+      "title": "8-K - Widget Industries Inc (0009876543) (Filer)",
+      "updated": "2026-02-10T00:00:00Z"
+    },
+    {
+      "author": "NewStartup LLC",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "urn:sec:filing:0005555555-26-000007",
+      "guid_is_permalink": false,
+      "link": "https://www.sec.gov/Archives/edgar/data/0005555555/000555555526000007/0005555555-26-000007-index.htm",
+      "pub_date": "2026-02-09T00:00:00Z",
+      "thumbnail": "",
+      "title": "S-1 - NewStartup LLC (0005555555) (Filer)",
+      "updated": "2026-02-09T00:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

@@ -1,0 +1,63 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "This feed uses non-standard namespace prefixes",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T12:00:00Z",
+    "link": "https://customns.example.com",
+    "title": "Custom Namespace Prefixes Feed",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "Custom Author",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p>Content using non-standard prefix <code>cnt:</code> instead of <code>content:</code>.</p>",
+      "description": "A post that uses custom namespace prefixes.",
+      "enclosures": [],
+      "extensions": {
+        "itunes": {
+          "duration": "00:45:30"
+        }
+      },
+      "guid": "cns-001",
+      "guid_is_permalink": false,
+      "link": "https://customns.example.com/post1",
+      "pub_date": "2026-02-10T12:00:00Z",
+      "thumbnail": "",
+      "title": "Post With Custom Prefixes",
+      "updated": "2026-02-10T12:00:00Z"
+    },
+    {
+      "author": "Another Author",
+      "categories": [],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "<p>More content with non-standard prefixes.</p>",
+      "description": "Another post with custom prefixes.",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "cns-002",
+      "guid_is_permalink": false,
+      "link": "https://customns.example.com/post2",
+      "pub_date": "2026-02-09T08:00:00Z",
+      "thumbnail": "",
+      "title": "Another Custom Prefix Post",
+      "updated": "2026-02-09T08:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

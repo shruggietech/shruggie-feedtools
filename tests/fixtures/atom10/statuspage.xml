@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Service Status</title>
+  <id>tag:status.example.com,2026:feed</id>
+  <link rel="alternate" type="text/html" href="https://status.example.com" />
+  <link rel="self" type="application/atom+xml" href="https://status.example.com/history.atom" />
+  <updated>2026-02-10T18:30:00Z</updated>
+  <entry>
+    <id>tag:status.example.com,2026:incident/5001</id>
+    <title>API Gateway Partial Outage</title>
+    <link rel="alternate" type="text/html" href="https://status.example.com/incidents/5001" />
+    <published>2026-02-10T15:00:00Z</published>
+    <updated>2026-02-10T18:30:00Z</updated>
+    <content type="html">&lt;p&gt;&lt;strong&gt;Resolved&lt;/strong&gt; — The issue has been resolved. All services are operational.&lt;/p&gt;
+&lt;p&gt;&lt;small&gt;Feb 10, 2026 18:30 UTC&lt;/small&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Monitoring&lt;/strong&gt; — A fix has been deployed and we are monitoring.&lt;/p&gt;
+&lt;p&gt;&lt;small&gt;Feb 10, 2026 17:00 UTC&lt;/small&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Investigating&lt;/strong&gt; — We are investigating reports of elevated error rates on the API gateway.&lt;/p&gt;
+&lt;p&gt;&lt;small&gt;Feb 10, 2026 15:00 UTC&lt;/small&gt;&lt;/p&gt;</content>
+    <author>
+      <name>Example Status</name>
+    </author>
+  </entry>
+  <entry>
+    <id>tag:status.example.com,2026:incident/5000</id>
+    <title>Scheduled Maintenance — Database Cluster</title>
+    <link rel="alternate" type="text/html" href="https://status.example.com/incidents/5000" />
+    <published>2026-02-08T02:00:00Z</published>
+    <updated>2026-02-08T06:00:00Z</updated>
+    <content type="html">&lt;p&gt;&lt;strong&gt;Completed&lt;/strong&gt; — Scheduled maintenance is complete.&lt;/p&gt;
+&lt;p&gt;&lt;small&gt;Feb 8, 2026 06:00 UTC&lt;/small&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;In Progress&lt;/strong&gt; — Maintenance is underway. Brief interruptions to database services expected.&lt;/p&gt;
+&lt;p&gt;&lt;small&gt;Feb 8, 2026 02:00 UTC&lt;/small&gt;&lt;/p&gt;</content>
+    <author>
+      <name>Example Status</name>
+    </author>
+  </entry>
+</feed>

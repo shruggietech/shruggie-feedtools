@@ -1,0 +1,84 @@
+{
+  "feed": {
+    "author": "",
+    "categories": [],
+    "description": "News about the programming language Python",
+    "extensions": {},
+    "generator": "",
+    "image": "",
+    "language": "",
+    "last_updated": "2026-02-10T14:30:00Z",
+    "link": "https://www.reddit.com/r/Python/",
+    "title": "r/Python — Hot Posts",
+    "ttl": null
+  },
+  "items": [
+    {
+      "author": "/u/feeddev42",
+      "categories": [
+        "Python"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "<!-- SC_OFF --><div class=\"md\"><p>Check out my new project for normalizing RSS, Atom, and JSON feeds.</p></div><!-- SC_ON -->",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "t3_abc123",
+      "guid_is_permalink": false,
+      "link": "https://www.reddit.com/r/Python/comments/abc123/i_built_a_feed_parser/",
+      "pub_date": "2026-02-10T14:30:00Z",
+      "thumbnail": "https://preview.redd.it/thumb-abc123.jpg?width=640&format=pjpg",
+      "title": "I built a feed parser & normalizer in Python",
+      "updated": "2026-02-10T14:30:00Z"
+    },
+    {
+      "author": "/u/pythonista99",
+      "categories": [
+        "Python",
+        "Discussion"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "<div class=\"md\"><p>Type parameter syntax is amazing. What else are people using?</p></div>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "t3_def456",
+      "guid_is_permalink": false,
+      "link": "https://www.reddit.com/r/Python/comments/def456/whats_your_favorite/",
+      "pub_date": "2026-02-09T20:15:00Z",
+      "thumbnail": "https://www.redditstatic.com/desktop2x/img/default-thumb.png",
+      "title": "What's your favorite Python 3.12+ feature?",
+      "updated": "2026-02-09T20:15:00Z"
+    },
+    {
+      "author": "/u/pep_watcher",
+      "categories": [
+        "Python",
+        "News"
+      ],
+      "comments_count": null,
+      "comments_url": null,
+      "content": "",
+      "description": "<div class=\"md\"><p>Template strings are coming to Python! Here's what it means.</p></div>",
+      "enclosures": [],
+      "extensions": {},
+      "guid": "t3_ghi789",
+      "guid_is_permalink": false,
+      "link": "https://www.reddit.com/r/Python/comments/ghi789/pep_750_template_strings/",
+      "pub_date": "2026-02-08T11:00:00Z",
+      "thumbnail": "https://preview.redd.it/thumb-ghi789.png?width=640&format=png",
+      "title": "PEP 750: Template Strings — Accepted!",
+      "updated": "2026-02-08T11:00:00Z"
+    }
+  ],
+  "message": null,
+  "schema_version": "1.0",
+  "source": {
+    "origin": "string",
+    "type": "rss2",
+    "url": null
+  },
+  "status": "ok"
+}

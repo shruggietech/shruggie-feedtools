@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdf:RDF
+  xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns="http://purl.org/rss/1.0/"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+  xmlns:dcterms="http://purl.org/dc/terms/"
+>
+  <channel rdf:about="https://data.gov.example/feeds/datasets.rdf">
+    <title>Government Open Data Portal</title>
+    <link>https://data.gov.example</link>
+    <description>Recently updated datasets from the Government Open Data Portal</description>
+    <dc:language>en-us</dc:language>
+    <dc:creator>Open Data Team</dc:creator>
+    <dc:date>2026-02-10T20:00:00Z</dc:date>
+    <items>
+      <rdf:Seq>
+        <rdf:li rdf:resource="https://data.gov.example/dataset/population-2025" />
+        <rdf:li rdf:resource="https://data.gov.example/dataset/weather-stations" />
+        <rdf:li rdf:resource="https://data.gov.example/dataset/budget-fy2026" />
+      </rdf:Seq>
+    </items>
+  </channel>
+  <item rdf:about="https://data.gov.example/dataset/population-2025">
+    <title>2025 Population Estimates by County</title>
+    <link>https://data.gov.example/dataset/population-2025</link>
+    <description>Annual population estimates for all US counties, 2025 vintage.</description>
+    <dc:creator>Census Bureau</dc:creator>
+    <dc:date>2026-02-10T20:00:00Z</dc:date>
+    <dc:subject>Demographics</dc:subject>
+    <dcterms:modified>2026-02-10T20:00:00Z</dcterms:modified>
+  </item>
+  <item rdf:about="https://data.gov.example/dataset/weather-stations">
+    <title>National Weather Station Directory</title>
+    <link>https://data.gov.example/dataset/weather-stations</link>
+    <description>Locations and metadata for all active weather stations.</description>
+    <dc:creator>NOAA</dc:creator>
+    <dc:date>2026-02-09T12:00:00Z</dc:date>
+    <dc:subject>Weather</dc:subject>
+    <dc:subject>Environment</dc:subject>
+  </item>
+  <item rdf:about="https://data.gov.example/dataset/budget-fy2026">
+    <title>Federal Budget FY2026 Summary</title>
+    <link>https://data.gov.example/dataset/budget-fy2026</link>
+    <description>High-level budget allocations for fiscal year 2026.</description>
+    <dc:creator>OMB</dc:creator>
+    <dc:date>2026-02-08T15:00:00Z</dc:date>
+    <dc:subject>Finance</dc:subject>
+  </item>
+</rdf:RDF>

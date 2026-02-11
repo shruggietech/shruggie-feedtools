@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/"
+>
+  <channel>
+    <title>SEC EDGAR Company Filings</title>
+    <link>https://www.sec.gov/cgi-bin/browse-edgar</link>
+    <description>Recent filings from the SEC EDGAR system</description>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 10 Feb 2026 21:00:00 GMT</lastBuildDate>
+    <item>
+      <title>10-K - ACME Corp (0001234567) (Filer)</title>
+      <link>https://www.sec.gov/Archives/edgar/data/0001234567/000123456726000001/0001234567-26-000001-index.htm</link>
+      <guid>urn:sec:filing:0001234567-26-000001</guid>
+      <pubDate>2026-02-10T21:00:00Z</pubDate>
+      <dc:creator>ACME Corp</dc:creator>
+      <description></description>
+    </item>
+    <item>
+      <title>8-K - Widget Industries Inc (0009876543) (Filer)</title>
+      <link>https://www.sec.gov/Archives/edgar/data/0009876543/000987654326000042/0009876543-26-000042-index.htm</link>
+      <guid>urn:sec:filing:0009876543-26-000042</guid>
+      <pubDate>2026-02-10</pubDate>
+      <dc:creator>Widget Industries Inc</dc:creator>
+    </item>
+    <item>
+      <title>S-1 - NewStartup LLC (0005555555) (Filer)</title>
+      <link>https://www.sec.gov/Archives/edgar/data/0005555555/000555555526000007/0005555555-26-000007-index.htm</link>
+      <guid>urn:sec:filing:0005555555-26-000007</guid>
+      <pubDate>February 9, 2026</pubDate>
+      <dc:creator>NewStartup LLC</dc:creator>
+    </item>
+  </channel>
+</rss>

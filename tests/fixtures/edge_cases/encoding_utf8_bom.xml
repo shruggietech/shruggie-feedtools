@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>UTF-8 BOM &amp; Encoding Test — Ünïcödé Fëëd</title>
+    <link>https://encoding.example.com</link>
+    <description>Testing UTF-8 BOM, HTML entities, and Unicode: é à ü ñ ß 中文 日本語 한국어 🚀</description>
+    <item>
+      <title>Ünïcödé Títlé with Émojis 🎉🐍</title>
+      <link>https://encoding.example.com/unicode-post</link>
+      <guid>enc-001</guid>
+      <pubDate>Mon, 10 Feb 2026 12:00:00 GMT</pubDate>
+      <description>This item has Unicode: café, naïve, résumé, El Niño, Straße, ☃ snowman</description>
+    </item>
+    <item>
+      <title>HTML Entities &amp; CDATA</title>
+      <link>https://encoding.example.com/entities-post</link>
+      <guid>enc-002</guid>
+      <pubDate>Sun, 09 Feb 2026 08:00:00 GMT</pubDate>
+      <description>Entities: &amp;amp; &amp;lt; &amp;gt; &amp;quot; and special: &lt;b&gt;bold&lt;/b&gt;</description>
+    </item>
+  </channel>
+</rss>
