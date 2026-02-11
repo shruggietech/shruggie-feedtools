@@ -1,0 +1,4 @@
+{"text": "Valid entry one.", "timestamp": "2026-02-10T08:00:00Z"}
+{"text": "Valid entry two.", "timestamp": "2026-02-10T08:05:00Z"}
+{this is not valid json at all
+{"text": "Valid entry three.", "timestamp": "2026-02-10T08:10:00Z"}
