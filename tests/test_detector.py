@@ -97,3 +97,37 @@ class TestDetectFeedType:
         import json
         data = [{"title": {"rendered": "Hello World"}, "foo": "bar"}]
         assert detect_feed_type(json.dumps(data).encode()) is None
+
+    # -- Content-type fallback detection --------------------------------------
+
+    def test_detect_json_feed_with_content_type_hint(self, load_fixture):
+        """JSON Feed detected via content-type when byte-sniffing succeeds directly."""
+        content = load_fixture("json_feed/v1_standard.json")
+        assert detect_feed_type(content, content_type="application/feed+json") == "json_feed"
+
+    def test_detect_json_feed_with_content_type_fallback(self):
+        """Content-type hint helps detect JSON when first byte is unexpected."""
+        # Simulate BOM + JSON where BOM removal reveals JSON
+        content = b'\xef\xbb\xbf{"version": "https://jsonfeed.org/version/1.1", "title": "T", "items": []}'
+        assert detect_feed_type(content) == "json_feed"
+
+    def test_detect_utf16_bom_json_feed(self):
+        """JSON Feed encoded as UTF-16 LE with BOM is detected."""
+        json_str = '{"version": "https://jsonfeed.org/version/1.1", "title": "T", "items": []}'
+        content = b'\xff\xfe' + json_str.encode("utf-16-le")
+        assert detect_feed_type(content) == "json_feed"
+
+    def test_detect_content_type_json_non_feed_still_none(self):
+        """Content-type says JSON but content is not a feed → still None."""
+        content = b'{"random": "object"}'
+        assert detect_feed_type(content, content_type="application/json") is None
+
+    def test_detect_xml_with_content_type_hint(self, load_fixture):
+        """XML feed detected with content-type hint."""
+        content = load_fixture("rss2/minimal.xml")
+        assert detect_feed_type(content, content_type="application/rss+xml") == "rss2"
+
+    def test_detect_content_type_none_still_works(self, load_fixture):
+        """Passing content_type=None doesn't break existing detection."""
+        content = load_fixture("json_feed/v1_standard.json")
+        assert detect_feed_type(content, content_type=None) == "json_feed"

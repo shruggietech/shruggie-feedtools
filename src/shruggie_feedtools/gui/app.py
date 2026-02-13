@@ -176,8 +176,13 @@ class ShruggieFeedToolsApp(ctk.CTk):
         # Start in Parse mode
         self._show_parse()
 
-        # Defer icon application so CustomTkinter finishes its own init first
-        self.after(200, self._apply_icon)
+        # Defer icon application so CustomTkinter finishes its own init first.
+        # CTk aggressively re-sets the window icon during startup, so we apply
+        # the icon multiple times at increasing delays to win the race.
+        self.after(100, self._apply_icon)
+        self.after(500, self._apply_icon)
+        self.after(1200, self._apply_icon)
+        self.after_idle(self._apply_icon)
 
         logger.debug("GUI application initialized (version %s)", __version__)
 
@@ -186,12 +191,22 @@ class ShruggieFeedToolsApp(ctk.CTk):
     # -----------------------------------------------------------------------
 
     def _apply_icon(self) -> None:
-        """Set the window icon from brand/favicon.ico (and .png fallback)."""
-        # Try multiple candidate base directories
+        """Set the window icon from brand/favicon.ico (and .png fallback).
+
+        Called multiple times at increasing delays to override CustomTkinter's
+        aggressive default-icon behaviour.  Each call is idempotent.
+        """
+        # Build candidate base directories (order matters — first hit wins)
         base_dirs: list[Path] = []
         if hasattr(sys, "_MEIPASS"):
             base_dirs.append(Path(sys._MEIPASS))  # type: ignore[attr-defined]
+
+        # Source-tree layout: app.py → gui/ → shruggie_feedtools/ → src/ → project root
         base_dirs.append(Path(__file__).resolve().parents[3])
+
+        # Editable-install / site-packages layout (parents[2] = package root's parent)
+        base_dirs.append(Path(__file__).resolve().parents[2])
+
         base_dirs.append(Path.cwd())
 
         ico_path: Path | None = None
@@ -205,7 +220,8 @@ class ShruggieFeedToolsApp(ctk.CTk):
                 png_path = candidate_png
 
         if ico_path is None and png_path is None:
-            logger.debug("No favicon found in any candidate path")
+            searched = [str(b / "brand") for b in base_dirs]
+            logger.debug("No favicon found; searched: %s", searched)
             return
 
         logger.debug("Loading icon from: ico=%s, png=%s", ico_path, png_path)
@@ -231,10 +247,10 @@ class ShruggieFeedToolsApp(ctk.CTk):
         except Exception as exc:
             logger.debug("wm_iconphoto failed: %s", exc)
 
-        # 3. Re-apply iconbitmap after a delay to override CTk default icon
+        # 3. Re-apply iconbitmap to override CTk default icon
         if ico_path is not None:
             _ico = str(ico_path)
-            self.after(300, lambda: self._safe_iconbitmap(_ico))
+            self.after(200, lambda: self._safe_iconbitmap(_ico))
 
     def _safe_iconbitmap(self, path: str) -> None:
         """Re-apply iconbitmap; swallow errors if window is closing."""

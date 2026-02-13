@@ -274,9 +274,39 @@ def _build_parser() -> argparse.ArgumentParser:
     """Build the top-level argparse parser with subcommands."""
     parser = argparse.ArgumentParser(
         prog="shruggie-feedtools",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
-            "Normalize web feeds into a single predictable JSON schema, "
-            "or construct feeds from text and templates."
+            "Normalize web feeds into a single predictable JSON schema,\n"
+            "or construct feeds from text and templates.\n"
+            "\n"
+            "Supported feed formats (parse mode):\n"
+            "  RSS 2.0, RSS 1.0/RDF, RSS 0.9x, Atom 1.0, Atom 0.3,\n"
+            "  JSON Feed 1.0/1.1, WordPress REST API (posts endpoint).\n"
+            "\n"
+            "Supported construction (construct mode):\n"
+            "  Template-driven feed generation from text or JSONL input\n"
+            "  with configurable GUID strategies (sha256, uuid4, etc.)."
+        ),
+        epilog=(
+            "examples:\n"
+            "  # Parse a single feed URL and pretty-print the output\n"
+            "  shruggie-feedtools parse --url https://example.com/feed.xml --pretty\n"
+            "\n"
+            "  # Parse a local JSON Feed file\n"
+            "  shruggie-feedtools parse --file feed.json --pretty\n"
+            "\n"
+            "  # Pipe URLs from stdin\n"
+            "  echo \"https://news.ycombinator.com/rss\" | shruggie-feedtools parse --stdin --pretty\n"
+            "\n"
+            "  # Construct a feed item from text\n"
+            "  shruggie-feedtools construct --template my.feedtemplate.json \\\n"
+            "      --text \"Server rebooted unexpectedly.\" \\\n"
+            "      --timestamp \"2026-02-10T03:00:00Z\" --pretty\n"
+            "\n"
+            "exit codes:\n"
+            "  0  All operations succeeded\n"
+            "  1  One or more feeds/entries failed to process\n"
+            "  2  Argument error or template validation error"
         ),
     )
     parser.add_argument(
@@ -291,100 +321,211 @@ def _build_parser() -> argparse.ArgumentParser:
     parse_parser = subparsers.add_parser(
         "parse",
         help="Parse web feeds from URLs, files, or stdin",
-        description="Parse web feeds and normalize them to JSON.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=(
+            "Parse web feeds and normalize them into a single predictable JSON schema.\n"
+            "\n"
+            "Supports RSS 2.0, RSS 1.0/RDF, Atom 1.0, JSON Feed 1.0/1.1,\n"
+            "and WordPress REST API post endpoints.  Input can come from a\n"
+            "single URL, a list of URLs, one or more local files, a directory\n"
+            "of feed files, or stdin.  Output is always schema-compliant JSON."
+        ),
+        epilog=(
+            "examples:\n"
+            "  # Parse a single URL\n"
+            "  shruggie-feedtools parse --url https://example.com/feed.xml --pretty\n"
+            "\n"
+            "  # Parse a local file\n"
+            "  shruggie-feedtools parse --file path/to/feed.json --pretty\n"
+            "\n"
+            "  # Parse URLs from stdin and chain with jq\n"
+            "  shruggie-feedtools parse --url https://example.com/feed | jq '.items[].title'\n"
+            "\n"
+            "  # Batch-parse URLs from a file, writing individual outputs\n"
+            "  shruggie-feedtools parse --url-list urls.txt --output-dir results/\n"
+            "\n"
+            "  # Pipe URLs in via stdin\n"
+            "  echo \"https://news.ycombinator.com/rss\" | shruggie-feedtools parse --stdin --pretty\n"
+            "\n"
+            "  # Parse all feeds in a directory with a 60-second timeout\n"
+            "  shruggie-feedtools parse --dir ./feeds/ --timeout 60 --pretty"
+        ),
     )
 
     # Input modes (mutually exclusive)
-    input_group = parse_parser.add_mutually_exclusive_group()
-    input_group.add_argument("--url", help="Parse a single remote feed URL")
-    input_group.add_argument("--url-list", help="Parse URLs from a file (one per line)")
-    input_group.add_argument("--file", help="Parse a single local file")
-    input_group.add_argument("--files", nargs="+", help="Parse multiple local files")
-    input_group.add_argument("--dir", help="Parse all feed files in a directory")
-    input_group.add_argument(
-        "--stdin", action="store_true", help="Read URLs from stdin"
+    input_group = parse_parser.add_argument_group(
+        "input modes (mutually exclusive — pick one)"
+    )
+    input_mx = input_group.add_mutually_exclusive_group()
+    input_mx.add_argument(
+        "--url", metavar="URL",
+        help="parse a single remote feed URL",
+    )
+    input_mx.add_argument(
+        "--url-list", metavar="FILE",
+        help="parse URLs from a text file (one URL per line, # comments ignored)",
+    )
+    input_mx.add_argument(
+        "--file", metavar="FILE",
+        help="parse a single local feed file (.xml, .json, .rss, .atom)",
+    )
+    input_mx.add_argument(
+        "--files", nargs="+", metavar="FILE",
+        help="parse multiple local feed files",
+    )
+    input_mx.add_argument(
+        "--dir", metavar="DIRECTORY",
+        help="parse all feed files found in a directory",
+    )
+    input_mx.add_argument(
+        "--stdin", action="store_true",
+        help="read URLs from stdin (one per line)",
     )
 
     # Output options
-    parse_parser.add_argument("--output", help="Write JSON to file (default: stdout)")
-    parse_parser.add_argument(
-        "--output-dir", help="For batch: write individual .json files to directory"
+    output_group = parse_parser.add_argument_group("output options")
+    output_group.add_argument(
+        "--output", metavar="FILE",
+        help="write JSON output to a file instead of stdout",
     )
-    parse_parser.add_argument(
-        "--pretty", action="store_true", help="Pretty-print JSON output"
+    output_group.add_argument(
+        "--output-dir", metavar="DIR",
+        help="for batch modes: write individual .json result files to this directory",
     )
-    parse_parser.add_argument(
-        "--indent", type=int, default=2, help="Indentation level (default: 2)"
+    output_group.add_argument(
+        "--pretty", action="store_true",
+        help="pretty-print JSON output (default: minified)",
     )
-    parse_parser.add_argument(
-        "--quiet", action="store_true", help="Suppress logs; only emit JSON"
+    output_group.add_argument(
+        "--indent", type=int, default=2, metavar="N",
+        help="indentation width when --pretty is used (default: 2)",
+    )
+    output_group.add_argument(
+        "--quiet", action="store_true",
+        help="suppress all log output; emit only JSON on stdout",
     )
 
     # Behavior options
-    parse_parser.add_argument(
-        "--timeout", type=float, help="HTTP timeout in seconds (default: 30)"
+    behavior_group = parse_parser.add_argument_group("behavior options")
+    behavior_group.add_argument(
+        "--timeout", type=float, metavar="SECONDS",
+        help="HTTP connect + read timeout per request in seconds (default: 30)",
     )
-    parse_parser.add_argument("--user-agent", help="Custom User-Agent header")
-    parse_parser.add_argument(
-        "--no-verify-ssl", action="store_true", help="Disable SSL verification"
+    behavior_group.add_argument(
+        "--user-agent", metavar="STRING",
+        help="custom User-Agent header for HTTP requests",
     )
-    parse_parser.add_argument(
-        "--max-items", type=int, help="Limit items per feed"
+    behavior_group.add_argument(
+        "--no-verify-ssl", action="store_true",
+        help="disable SSL certificate verification (use with caution)",
     )
-    parse_parser.add_argument(
+    behavior_group.add_argument(
+        "--max-items", type=int, metavar="N",
+        help="limit the number of items returned per feed",
+    )
+    behavior_group.add_argument(
         "--debug", action="store_true",
-        help="Enable debug logging to a .log file next to the executable",
+        help="enable debug logging to a .log file next to the executable",
     )
 
     # -- Construct subcommand ------------------------------------------------
     construct_parser = subparsers.add_parser(
         "construct",
         help="Construct feeds from text and templates",
-        description="Construct schema-compliant feeds from text content and templates.",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description=(
+            "Construct schema-compliant feed output from arbitrary text input using\n"
+            "template files (.feedtemplate.json).  Supports single-item creation from\n"
+            "a text string or stdin, and batch creation from JSONL input.\n"
+            "\n"
+            "Templates define feed-level metadata, item-mapping rules, and GUID\n"
+            "generation strategies (sha256, uuid4, timestamp, sequential).  Output\n"
+            "is structurally identical to parsed feed output and can be merged with it."
+        ),
+        epilog=(
+            "examples:\n"
+            "  # Construct a single item from inline text\n"
+            "  shruggie-feedtools construct --template changelog.feedtemplate.json \\\n"
+            "      --text \"Fixed login timeout bug\" \\\n"
+            "      --timestamp \"2026-02-10T03:00:00Z\" --pretty\n"
+            "\n"
+            "  # Construct from piped text via stdin\n"
+            "  echo \"The server rebooted unexpectedly.\" | \\\n"
+            "      shruggie-feedtools construct \\\n"
+            "          --template incident.feedtemplate.json \\\n"
+            "          --text-stdin \\\n"
+            "          --timestamp \"2026-02-10T03:00:00Z\"\n"
+            "\n"
+            "  # Batch-construct from a JSONL file\n"
+            "  shruggie-feedtools construct --template changelog.feedtemplate.json \\\n"
+            "      --entries events.jsonl --pretty\n"
+            "\n"
+            "  # Batch from stdin JSONL\n"
+            "  cat events.jsonl | shruggie-feedtools construct \\\n"
+            "      --template changelog.feedtemplate.json --entries-stdin --pretty"
+        ),
     )
 
-    # Required
-    construct_parser.add_argument(
-        "--template", required=True, help="Path to .feedtemplate.json file"
+    # Template (required)
+    template_group = construct_parser.add_argument_group("template")
+    template_group.add_argument(
+        "--template", required=True, metavar="FILE",
+        help="path to a .feedtemplate.json template file (required)",
     )
 
     # Input modes (mutually exclusive)
-    construct_input = construct_parser.add_mutually_exclusive_group()
-    construct_input.add_argument("--text", help="Text content for a single item")
+    construct_input_group = construct_parser.add_argument_group(
+        "input modes (mutually exclusive — pick one)"
+    )
+    construct_input = construct_input_group.add_mutually_exclusive_group()
     construct_input.add_argument(
-        "--text-stdin", action="store_true", help="Read text from stdin (single item)"
+        "--text", metavar="STRING",
+        help="text content for a single feed item (use with --timestamp)",
     )
     construct_input.add_argument(
-        "--entries", help="JSONL file with multiple entries"
+        "--text-stdin", action="store_true",
+        help="read text content from stdin for a single item (use with --timestamp)",
     )
     construct_input.add_argument(
-        "--entries-stdin",
-        action="store_true",
-        help="Read JSONL entries from stdin",
+        "--entries", metavar="FILE",
+        help="path to a JSONL file with multiple entries (each line is a JSON object)",
+    )
+    construct_input.add_argument(
+        "--entries-stdin", action="store_true",
+        help="read JSONL entries from stdin (each line is a JSON object)",
     )
 
     # Timestamp
-    construct_parser.add_argument(
-        "--timestamp",
-        help="Timestamp for the item (required for single-item modes)",
+    timestamp_group = construct_parser.add_argument_group("timestamp")
+    timestamp_group.add_argument(
+        "--timestamp", metavar="STRING",
+        help=(
+            "timestamp for the item, required for --text and --text-stdin modes; "
+            "accepts ISO 8601, RFC 822, Unix epoch, or natural-language dates"
+        ),
     )
 
     # Output options
-    construct_parser.add_argument(
-        "--output", help="Write JSON to file (default: stdout)"
+    construct_output_group = construct_parser.add_argument_group("output options")
+    construct_output_group.add_argument(
+        "--output", metavar="FILE",
+        help="write JSON output to a file instead of stdout",
     )
-    construct_parser.add_argument(
-        "--pretty", action="store_true", help="Pretty-print JSON output"
+    construct_output_group.add_argument(
+        "--pretty", action="store_true",
+        help="pretty-print JSON output (default: minified)",
     )
-    construct_parser.add_argument(
-        "--indent", type=int, default=2, help="Indentation level (default: 2)"
+    construct_output_group.add_argument(
+        "--indent", type=int, default=2, metavar="N",
+        help="indentation width when --pretty is used (default: 2)",
     )
-    construct_parser.add_argument(
-        "--quiet", action="store_true", help="Suppress logs; only emit JSON"
+    construct_output_group.add_argument(
+        "--quiet", action="store_true",
+        help="suppress all log output; emit only JSON on stdout",
     )
-    construct_parser.add_argument(
+    construct_output_group.add_argument(
         "--debug", action="store_true",
-        help="Enable debug logging to a .log file next to the executable",
+        help="enable debug logging to a .log file next to the executable",
     )
 
     return parser

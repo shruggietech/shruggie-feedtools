@@ -3,6 +3,8 @@
 Determines the format of raw feed content (bytes) by inspecting structure:
 - XML feeds are routed through feedparser for version sniffing
 - JSON content is checked for JSON Feed or WordPress REST signatures
+- An optional content-type hint (from HTTP headers or file extension) is used
+  as a fallback when byte-level sniffing is inconclusive.
 """
 
 from __future__ import annotations
@@ -26,15 +28,48 @@ _FEEDPARSER_VERSION_MAP: dict[str, str] = {
     "atom03": "atom03",
 }
 
+# Content-type substrings that indicate JSON content
+_JSON_CONTENT_TYPES = (
+    "application/json",
+    "application/feed+json",
+    "text/json",
+    "application/vnd.api+json",
+)
 
-def detect_feed_type(content: bytes) -> str | None:
+# Content-type substrings that indicate XML/feed content
+_XML_CONTENT_TYPES = (
+    "application/rss+xml",
+    "application/atom+xml",
+    "application/xml",
+    "text/xml",
+    "application/rdf+xml",
+)
+
+# BOMs to strip before detection
+_BOM_MAP: list[tuple[bytes, str]] = [
+    (b"\xef\xbb\xbf", "utf-8-sig"),       # UTF-8 BOM
+    (b"\xff\xfe\x00\x00", "utf-32-le"),    # UTF-32 LE (check before UTF-16 LE)
+    (b"\x00\x00\xfe\xff", "utf-32-be"),    # UTF-32 BE
+    (b"\xff\xfe", "utf-16-le"),            # UTF-16 LE
+    (b"\xfe\xff", "utf-16-be"),            # UTF-16 BE
+]
+
+
+def detect_feed_type(
+    content: bytes,
+    content_type: str | None = None,
+) -> str | None:
     """Detect the feed format from raw bytes.
 
     Routes content through either the XML path (via feedparser) or the
     JSON path (structure sniffing) based on the first non-whitespace byte.
+    Falls back to content-type hints when byte-sniffing is inconclusive.
 
     Args:
         content: Raw bytes of the feed content.
+        content_type: Optional HTTP Content-Type header value (e.g.
+            ``"application/feed+json; charset=utf-8"``).  Used as a
+            fallback when byte-level detection fails.
 
     Returns:
         A format string (``"rss2"``, ``"atom10"``, ``"rss1"``, ``"json_feed"``,
@@ -45,10 +80,20 @@ def detect_feed_type(content: bytes) -> str | None:
         logger.debug("detect_feed_type: empty content")
         return None
 
-    # Strip BOM if present (UTF-8 BOM: EF BB BF)
+    # Strip BOM if present and re-encode to UTF-8 for non-UTF-8 encodings
     stripped = content.lstrip()
-    if content.startswith(b"\xef\xbb\xbf"):
-        stripped = content[3:].lstrip()
+    decoded_content: bytes = content
+    for bom_bytes, encoding in _BOM_MAP:
+        if content.startswith(bom_bytes):
+            try:
+                text = content[len(bom_bytes):].decode(encoding, errors="replace")
+                decoded_content = text.encode("utf-8")
+                stripped = decoded_content.lstrip()
+            except Exception:
+                # Fallback: just strip the BOM bytes
+                stripped = content[len(bom_bytes):].lstrip()
+                decoded_content = stripped
+            break
 
     if not stripped:
         return None
@@ -59,16 +104,57 @@ def detect_feed_type(content: bytes) -> str | None:
     if first_byte in (b"{", b"["):
         result = _detect_json_type(stripped)
         logger.debug("detect_feed_type: JSON path -> %s", result)
-        return result
+        if result is not None:
+            return result
 
     # XML path
     if first_byte == b"<":
-        # Pass BOM-stripped content to feedparser
         result = _detect_xml_type(stripped)
         logger.debug("detect_feed_type: XML path -> %s", result)
-        return result
+        if result is not None:
+            return result
 
-    logger.debug("detect_feed_type: unrecognized first byte %r", first_byte)
+    # ----- Content-type fallback -----
+    # When byte-sniffing fails (e.g. unusual encoding, leading whitespace after
+    # BOM stripping that still left garbage, or an unexpected wrapper), use the
+    # content-type header as a hint to try the other detection path.
+    ct_lower = (content_type or "").lower().split(";")[0].strip()
+
+    if ct_lower and first_byte not in (b"{", b"["):
+        # Content-Type says JSON but first byte wasn't { or [
+        if any(jct in ct_lower for jct in _JSON_CONTENT_TYPES):
+            logger.debug(
+                "detect_feed_type: content-type '%s' suggests JSON; "
+                "attempting JSON detection despite first_byte=%r",
+                ct_lower, first_byte,
+            )
+            result = _detect_json_type(decoded_content)
+            if result is not None:
+                return result
+
+    if ct_lower and first_byte != b"<":
+        # Content-Type says XML but first byte wasn't <
+        if any(xct in ct_lower for xct in _XML_CONTENT_TYPES):
+            logger.debug(
+                "detect_feed_type: content-type '%s' suggests XML; "
+                "attempting XML detection despite first_byte=%r",
+                ct_lower, first_byte,
+            )
+            result = _detect_xml_type(decoded_content)
+            if result is not None:
+                return result
+
+    # ----- File extension fallback for local files -----
+    # (content_type might be a filename hint like ".json")
+    if ct_lower.endswith(".json") or ct_lower.endswith(".json\""):
+        result = _detect_json_type(decoded_content)
+        if result is not None:
+            return result
+
+    logger.debug(
+        "detect_feed_type: unrecognized (first_byte=%r, content_type=%r)",
+        first_byte, content_type,
+    )
     return None
 
 

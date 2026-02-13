@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from shruggie_feedtools.core.config import ParserConfig
@@ -137,6 +139,42 @@ class TestParseFullPipeline:
     def test_parse_unknown_json_returns_error(self):
         result = parse_string('{"random": "object"}')
         assert result["status"] == "error"
+
+    def test_parse_url_json_feed_full_pipeline(self):
+        """parse_url correctly handles a JSON Feed response."""
+        from unittest import mock
+
+        from shruggie_feedtools.core.fetcher import FetchResult
+        from shruggie_feedtools.core.parser import parse_url
+
+        fixture_path = Path(__file__).parent / "fixtures" / "json_feed" / "v1_standard.json"
+        content = fixture_path.read_bytes()
+
+        with mock.patch("shruggie_feedtools.core.parser.fetch") as mock_fetch:
+            mock_fetch.return_value = FetchResult(
+                ok=True,
+                content=content,
+                content_type="application/feed+json; charset=utf-8",
+                final_url="https://example.com/feed.json",
+                status_code=200,
+            )
+            result = parse_url("https://example.com/feed.json")
+
+        assert result["status"] == "ok"
+        assert result["source"]["type"] == "json_feed"
+        assert result["source"]["origin"] == "url"
+        assert result["feed"]["title"]
+        assert len(result["items"]) > 0
+        _validate_schema(result)
+
+    def test_parse_file_json_feed(self, fixtures_path):
+        """parse_file correctly handles a JSON Feed file."""
+        path = fixtures_path / "json_feed" / "v1_standard.json"
+        result = parse_file(path)
+        assert result["status"] == "ok"
+        assert result["source"]["type"] == "json_feed"
+        assert result["source"]["origin"] == "file"
+        _validate_schema(result)
 
     # ── Source origin / metadata ─────────────────────────────
 

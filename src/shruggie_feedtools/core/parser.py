@@ -130,8 +130,11 @@ def parse_string(
     feed_type = detect_feed_type(raw)
     logger.debug("parse_string: detected feed_type=%s", feed_type)
     if feed_type is None:
+        # Provide diagnostic info in error message
+        first_byte = raw.lstrip()[0:1] if raw.strip() else b""
         return _error_response(
-            "Content does not match any known feed format",
+            f"Content does not match any known feed format "
+            f"(first_byte=0x{first_byte.hex() if first_byte else '??'})",
             SourceOrigin.STRING,
             source_url,
         )
@@ -182,10 +185,17 @@ def parse_file(
     feed_type = detect_feed_type(raw)
     logger.debug("parse_file: detected feed_type=%s", feed_type)
     if feed_type is None:
-        return _error_response(
-            "File content does not match any known feed format",
-            SourceOrigin.FILE,
-        )
+        # Retry with file-extension hint for JSON files
+        suffix = file_path.suffix.lower()
+        if suffix == ".json":
+            feed_type = detect_feed_type(raw, content_type="application/json")
+        if feed_type is None:
+            first_byte = raw.lstrip()[0:1] if raw.strip() else b""
+            return _error_response(
+                f"File content does not match any known feed format "
+                f"(file={file_path.name}, first_byte=0x{first_byte.hex() if first_byte else '??'})",
+                SourceOrigin.FILE,
+            )
 
     try:
         adapter_result = _route_to_adapter(raw, feed_type, None, config)
@@ -226,10 +236,14 @@ def parse_url(
     if not raw or not raw.strip():
         return _error_response("Empty response body", SourceOrigin.URL, final_url)
 
-    feed_type = detect_feed_type(raw)
+    # Detect format — pass content-type header as a fallback hint
+    feed_type = detect_feed_type(raw, content_type=result.content_type)
     if feed_type is None:
+        first_byte = raw.lstrip()[0:1] if raw.strip() else b""
+        ct = result.content_type or "unknown"
         return _error_response(
-            "Response does not match any known feed format",
+            f"Response does not match any known feed format "
+            f"(content_type={ct}, first_byte=0x{first_byte.hex() if first_byte else '??'})",
             SourceOrigin.URL,
             final_url,
         )

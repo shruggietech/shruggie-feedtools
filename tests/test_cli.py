@@ -107,6 +107,43 @@ class TestCliParse:
         assert data["status"] == "ok"
         assert data["source"]["origin"] == "file"
 
+    def test_cli_parse_file_json_feed(self) -> None:
+        """Parse --file with a JSON Feed fixture produces valid output."""
+        fixture = FIXTURES_DIR / "json_feed" / "v1_standard.json"
+        stdout, _stderr, code = run_cli(["parse", "--file", str(fixture)])
+
+        assert code == 0
+        data = json.loads(stdout)
+        assert data["status"] == "ok"
+        assert data["source"]["type"] == "json_feed"
+        assert data["source"]["origin"] == "file"
+        assert data["feed"]["title"]
+        assert len(data["items"]) > 0
+
+    def test_cli_parse_url_json_feed(self) -> None:
+        """Parse --url with a mocked JSON Feed response produces valid output."""
+        fixture = FIXTURES_DIR / "json_feed" / "v1_standard.json"
+        content = fixture.read_bytes()
+
+        with mock.patch("shruggie_feedtools.core.parser.fetch") as mock_fetch:
+            from shruggie_feedtools.core.fetcher import FetchResult
+
+            mock_fetch.return_value = FetchResult(
+                ok=True,
+                content=content,
+                content_type="application/feed+json",
+                final_url="https://example.com/feed.json",
+                status_code=200,
+            )
+            stdout, _stderr, code = run_cli(
+                ["parse", "--url", "https://example.com/feed.json"]
+            )
+
+        assert code == 0
+        data = json.loads(stdout)
+        assert data["status"] == "ok"
+        assert data["source"]["type"] == "json_feed"
+
     def test_cli_parse_stdin(self) -> None:
         """Parse --stdin reads URLs from stdin and produces JSON."""
         fixture = FIXTURES_DIR / "rss2" / "minimal.xml"
@@ -481,22 +518,62 @@ class TestCliGlobal:
         assert "construct" in combined.lower()
 
     def test_cli_parse_help(self) -> None:
-        """parse --help prints parse-specific options."""
+        """parse --help prints parse-specific options with argument groups."""
         stdout, stderr, code = run_cli(["parse", "--help"])
 
         assert code == 0
         combined = stdout + stderr
+        # Core input flags are present
         assert "--url" in combined
+        assert "--url-list" in combined
         assert "--file" in combined
+        assert "--files" in combined
+        assert "--dir" in combined
+        assert "--stdin" in combined
+        # Output flags
+        assert "--output" in combined
+        assert "--output-dir" in combined
+        assert "--pretty" in combined
+        assert "--indent" in combined
+        # Behavior flags
+        assert "--timeout" in combined
+        assert "--user-agent" in combined
+        assert "--no-verify-ssl" in combined
+        assert "--max-items" in combined
+        # Argument groups present
+        assert "input modes" in combined.lower()
+        assert "output options" in combined.lower()
+        assert "behavior options" in combined.lower()
+        # Usage examples present
+        assert "examples" in combined.lower()
+        # Metavars shown
+        assert "URL" in combined
+        assert "FILE" in combined
+        assert "SECONDS" in combined
 
     def test_cli_construct_help(self) -> None:
-        """construct --help prints construct-specific options."""
+        """construct --help prints construct-specific options with groups."""
         stdout, stderr, code = run_cli(["construct", "--help"])
 
         assert code == 0
         combined = stdout + stderr
+        # Core flags
         assert "--template" in combined
         assert "--text" in combined
+        assert "--text-stdin" in combined
+        assert "--entries" in combined
+        assert "--entries-stdin" in combined
+        assert "--timestamp" in combined
+        # Output flags
+        assert "--output" in combined
+        assert "--pretty" in combined
+        # Argument groups
+        assert "template" in combined.lower()
+        assert "input modes" in combined.lower()
+        assert "timestamp" in combined.lower()
+        assert "output options" in combined.lower()
+        # Usage examples
+        assert "examples" in combined.lower()
 
     def test_cli_unknown_subcommand(self) -> None:
         """Unknown subcommand produces error and exit code 2."""
