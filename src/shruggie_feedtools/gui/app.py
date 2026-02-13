@@ -9,6 +9,7 @@ from __future__ import annotations
 import contextlib
 import json
 import logging
+import os
 import sys
 import threading
 import tkinter as tk
@@ -49,6 +50,35 @@ from shruggie_feedtools.utils.logging import (
 )
 
 logger = logging.getLogger("shruggie_feedtools")
+
+# ---------------------------------------------------------------------------
+# Persistent settings directory (AppData)
+# ---------------------------------------------------------------------------
+
+def _get_settings_dir() -> Path:
+    """Return the application settings directory under the user's AppData."""
+    if sys.platform == "win32":
+        base = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
+    elif sys.platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
+    return base / "shruggie-feedtools"
+
+
+def _get_settings_path() -> Path:
+    """Return the full path to settings.json."""
+    return _get_settings_dir() / "settings.json"
+
+
+_SETTINGS_DEFAULTS: dict[str, Any] = {
+    "theme": "Dark",
+    "logging_enabled": False,
+    "font_size": 13,
+    "pretty_print": True,
+    "verify_ssl": True,
+    "max_items": "",
+}
 
 # ---------------------------------------------------------------------------
 # Theme color palettes
@@ -164,6 +194,14 @@ class ShruggieFeedToolsApp(ctk.CTk):
         # Output font size (user-configurable via Settings)
         self._font_size = _FONT_SIZE_DEFAULT
 
+        # Parse-mode defaults (persisted across mode switches)
+        self._pref_pretty_print = True
+        self._pref_verify_ssl = True
+        self._pref_max_items = ""
+
+        # Load persisted settings from AppData (may override the defaults above)
+        self._load_settings()
+
         # Fonts
         self._mono_font = ctk.CTkFont(family=_MONO_FAMILY, size=self._font_size)
         self._construct_text_font = ctk.CTkFont(family=_MONO_FAMILY, size=12)
@@ -196,6 +234,89 @@ class ShruggieFeedToolsApp(ctk.CTk):
         self.after_idle(self._apply_icon)
 
         logger.debug("GUI application initialized (version %s)", __version__)
+
+    # -----------------------------------------------------------------------
+    # Settings persistence (AppData)
+    # -----------------------------------------------------------------------
+
+    def _collect_settings(self) -> dict[str, Any]:
+        """Snapshot every user-facing preference into a plain dict."""
+        return {
+            "theme": self._current_theme_mode,
+            "logging_enabled": self._logging_enabled,
+            "font_size": self._font_size,
+            "pretty_print": self._pref_pretty_print,
+            "verify_ssl": self._pref_verify_ssl,
+            "max_items": self._pref_max_items,
+        }
+
+    def _apply_settings(self, settings: dict[str, Any]) -> None:
+        """Apply a settings dict to the live application state."""
+        self._current_theme_mode = settings.get("theme", "Dark")
+        ctk.set_appearance_mode(self._current_theme_mode.lower())
+
+        self._font_size = settings.get("font_size", _FONT_SIZE_DEFAULT)
+        self._mono_font.configure(size=self._font_size)
+
+        self._pref_pretty_print = settings.get("pretty_print", True)
+        self._pref_verify_ssl = settings.get("verify_ssl", True)
+        self._pref_max_items = settings.get("max_items", "")
+
+        logging_wanted = settings.get("logging_enabled", False)
+        if logging_wanted and not self._logging_enabled:
+            setup_file_logging()
+            self._logging_enabled = True
+        elif not logging_wanted and self._logging_enabled:
+            disable_file_logging()
+            self._logging_enabled = False
+
+        logger.debug("Settings applied: %s", settings)
+
+    def _load_settings(self) -> None:
+        """Load settings from AppData on startup; create defaults if missing."""
+        settings_dir = _get_settings_dir()
+        settings_path = _get_settings_path()
+
+        try:
+            settings_dir.mkdir(parents=True, exist_ok=True)
+        except OSError as exc:
+            logger.debug("Could not create settings dir %s: %s", settings_dir, exc)
+            return
+
+        if settings_path.exists():
+            try:
+                data = json.loads(settings_path.read_text(encoding="utf-8"))
+                merged = {**_SETTINGS_DEFAULTS, **data}
+                self._apply_settings(merged)
+                logger.debug("Settings loaded from %s", settings_path)
+            except Exception as exc:
+                logger.debug("Failed to load settings: %s", exc)
+        else:
+            # First run — write current defaults
+            try:
+                settings_path.write_text(
+                    json.dumps(self._collect_settings(), indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                logger.debug("Default settings written to %s", settings_path)
+            except OSError as exc:
+                logger.debug("Could not write default settings: %s", exc)
+
+    def _save_settings_to_disk(self) -> None:
+        """Force-write the current application state to settings.json."""
+        # Sync live parse-mode widget values (if present) before saving
+        self._sync_parse_prefs()
+
+        settings_path = _get_settings_path()
+        try:
+            settings_path.parent.mkdir(parents=True, exist_ok=True)
+            settings_path.write_text(
+                json.dumps(self._collect_settings(), indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            logger.debug("Settings saved to %s", settings_path)
+        except OSError as exc:
+            logger.debug("Failed to save settings: %s", exc)
 
     # -----------------------------------------------------------------------
     # Branding — favicon
@@ -655,7 +776,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
     )
     _MODE_ATTRS_SETTINGS = (
         "_theme_selector", "_logging_switch", "_log_path_label",
-        "_font_size_var", "_font_size_spinbox",
+        "_font_size_var", "_font_size_spinbox", "_save_settings_btn",
     )
 
     def _clear_input_frame(self) -> None:
@@ -665,6 +786,18 @@ class ShruggieFeedToolsApp(ctk.CTk):
         for attr in (*self._MODE_ATTRS_PARSE, *self._MODE_ATTRS_CONSTRUCT, *self._MODE_ATTRS_SETTINGS):
             with contextlib.suppress(AttributeError):
                 delattr(self, attr)
+
+    def _sync_parse_prefs(self) -> None:
+        """Snapshot live parse-mode widget values into pref fields."""
+        if hasattr(self, "_pretty_var"):
+            with contextlib.suppress(Exception):
+                self._pref_pretty_print = self._pretty_var.get()
+        if hasattr(self, "_ssl_var"):
+            with contextlib.suppress(Exception):
+                self._pref_verify_ssl = self._ssl_var.get()
+        if hasattr(self, "_max_items_var"):
+            with contextlib.suppress(Exception):
+                self._pref_max_items = self._max_items_var.get().strip()
 
     def _save_current_output(self) -> None:
         """Persist the current output text to the active mode's storage."""
@@ -714,6 +847,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
     def _show_construct(self) -> None:
         logger.debug("Switching to Construct mode")
         self._save_current_output()
+        self._sync_parse_prefs()
         self._current_mode = "construct"
         self._clear_input_frame()
         self._show_output_panel()
@@ -724,6 +858,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
     def _show_settings(self) -> None:
         logger.debug("Switching to Settings mode")
         self._save_current_output()
+        self._sync_parse_prefs()
         self._current_mode = "settings"
         self._clear_input_frame()
         self._hide_output_panel()
@@ -769,7 +904,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
         opts_frame = ctk.CTkFrame(frame, fg_color="transparent")
         opts_frame.grid(row=2, column=0, sticky="we", padx=8, pady=4)
 
-        self._pretty_var = ctk.BooleanVar(value=True)
+        self._pretty_var = ctk.BooleanVar(value=self._pref_pretty_print)
         ctk.CTkCheckBox(
             opts_frame,
             text="Pretty print",
@@ -780,13 +915,13 @@ class ShruggieFeedToolsApp(ctk.CTk):
         ctk.CTkLabel(opts_frame, text="Max items:", font=self._sans_font).pack(
             side="left", padx=(0, 4)
         )
-        self._max_items_var = ctk.StringVar(value="")
+        self._max_items_var = ctk.StringVar(value=self._pref_max_items)
         max_entry = ctk.CTkEntry(
             opts_frame, textvariable=self._max_items_var, width=60, font=self._sans_font
         )
         max_entry.pack(side="left", padx=(0, 14))
 
-        self._ssl_var = ctk.BooleanVar(value=True)
+        self._ssl_var = ctk.BooleanVar(value=self._pref_verify_ssl)
         ctk.CTkCheckBox(
             opts_frame,
             text="SSL verify",
@@ -1254,6 +1389,52 @@ class ShruggieFeedToolsApp(ctk.CTk):
         # Also validate on manual typed entry (Return / FocusOut)
         self._font_size_spinbox.bind("<Return>", lambda _e: self._on_font_size_change())
         self._font_size_spinbox.bind("<FocusOut>", lambda _e: self._on_font_size_change())
+
+        # Divider
+        div3 = ctk.CTkFrame(frame, height=2, fg_color="gray30")
+        div3.grid(row=12, column=0, sticky="we", padx=12, pady=4)
+
+        # Section: Save Settings
+        save_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        save_frame.grid(row=13, column=0, sticky="we", padx=12, pady=(12, 4))
+        save_frame.grid_columnconfigure(1, weight=1)
+
+        self._save_settings_btn = ctk.CTkButton(
+            save_frame,
+            text="Save Settings",
+            font=self._sans_bold,
+            width=140,
+            command=self._on_save_settings,
+        )
+        self._save_settings_btn.grid(row=0, column=0, sticky="w")
+
+        save_note = ctk.CTkLabel(
+            save_frame,
+            text=(
+                "Saves all current settings to your AppData directory so they\n"
+                "are automatically restored the next time you launch the app."
+            ),
+            font=ctk.CTkFont(size=11),
+            text_color=("gray30", "gray70"),
+            justify="left",
+        )
+        save_note.grid(row=0, column=1, sticky="w", padx=(12, 0))
+
+    def _on_save_settings(self) -> None:
+        """Handle the Save Settings button press."""
+        self._save_settings_to_disk()
+        # Visual feedback — flash green like the Copy button
+        if hasattr(self, "_save_settings_btn") and self._widget_alive(self._save_settings_btn):
+            self._save_settings_btn.configure(text="Saved!", fg_color="#2ea043")
+            self.after(1500, self._reset_save_settings_btn)
+
+    def _reset_save_settings_btn(self) -> None:
+        """Restore the Save Settings button to its default appearance."""
+        if hasattr(self, "_save_settings_btn") and self._widget_alive(self._save_settings_btn):
+            self._save_settings_btn.configure(
+                text="Save Settings",
+                fg_color=("#3a7ebf", "#1f538d"),
+            )
 
     # -----------------------------------------------------------------------
     # Theme management
