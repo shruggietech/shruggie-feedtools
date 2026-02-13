@@ -5,11 +5,7 @@ a = Analysis(
     ['src\\shruggie_feedtools\\gui\\app.py'],
     pathex=[],
     binaries=[],
-    datas=[
-        ('src/shruggie_feedtools/gui', 'shruggie_feedtools/gui'),
-        ('brand/favicon.ico', 'brand'),
-        ('brand', 'brand'),
-    ],
+    datas=[('src/shruggie_feedtools/gui', 'shruggie_feedtools/gui')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -39,5 +35,4 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='brand/favicon.ico',
 )

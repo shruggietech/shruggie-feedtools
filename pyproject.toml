@@ -13,7 +13,7 @@ requires-python = ">=3.12"
 authors = [
     { name = "William Thompson / ShruggieTech LLC" },
 ]
-keywords = ["rss", "atom", "feed", "parser", "json-feed", "wordpress", "normalize"]
+keywords = ["rss", "atom", "feed", "parser", "normalize"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
