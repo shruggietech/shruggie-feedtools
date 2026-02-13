@@ -1,4 +1,4 @@
-# Release Notes — shruggie-feedtools v0.1.1
+# Release Notes — shruggie-feedtools v0.1.2
 
 **Release Date:** 2026-02-13
 **Status:** Patch release (Alpha)
@@ -7,37 +7,58 @@
 
 ## Overview
 
-Bug-fix and enhancement release addressing critical issues found in v0.1.0.
+Enhancement release adding a Settings panel, debug logging across the entire codebase, theme management, output font-size control, and icon/taskbar fixes.
 
 ---
 
+## New Features
+
+### GUI: Settings Tab
+
+- **Application Theme** — New "Settings" tab in the left sidebar with a segmented button to switch between Auto (Default), Light, and Dark themes. Theme changes are applied immediately to the output editor (background, foreground, syntax highlighting, gutter, scrollbars).
+- **Debug Logging Toggle** — Enable/disable file-based debug logging from within the GUI. When active, detailed DEBUG-level messages are written to a `.log` file next to the executable. The log file path is displayed in the Settings panel.
+- **Output Font Size** — Numeric spinbox (up/down arrows + typed entry) to adjust the output viewer font size between 8–32 pt. Out-of-range values are gracefully clamped to the nearest limit; a debug log message is emitted when clamping occurs.
+
+### GUI: Theming & Scrollbars
+
+- **Dynamic scrollbar recoloring** — Replaced `tk.Scrollbar` with `ctk.CTkScrollbar` so scrollbars automatically adapt to the current light/dark color scheme.
+- **Full editor theme palette** — Dark and light color dictionaries for editor background/foreground, gutter, cursor, selection, and all JSON syntax-highlight token colors.
+
+### CLI: Debug Logging
+
+- **`--debug` flag** — Added to both `parse` and `construct` subcommands. When active, writes DEBUG-level logs to `<executable_basename>.log` in the same directory as the executable/script.
+
+### Debug Logging Infrastructure
+
+- Comprehensive debug logging added to **all core modules, adapters, and construct modules**:
+  - `core/parser.py` — parse_string, parse_file, parse_url, adapter routing
+  - `core/fetcher.py` — HTTP request details, response status, retries
+  - `core/detector.py` — feed type detection paths and results
+  - `core/normalizer.py` — feed and item normalization entry points
+  - `core/dates.py` — epoch value handling
+  - `adapters/feedparser_adapter.py` — version detection, entry count
+  - `adapters/json_feed_adapter.py` — feed title, item count
+  - `adapters/wp_rest_adapter.py` — post count, base URL
+  - `construct/builder.py` — batch size, template title
+  - `construct/template.py` — template loading source
+  - `construct/entry.py` — JSONL line count
+
 ## Bug Fixes
 
-- **Fixed: Construct mode completely non-functional in GUI** — Switching from Parse to Construct left stale widget references that silently crashed the action handler and permanently locked the busy state. Mode switching now properly cleans up all widget attributes, and `_set_busy` / `_find_action_buttons` guard against dead widgets via `winfo_exists()`.
-- **Fixed: Thread-safety violation in Parse GUI flow** — Parse input values are now captured on the main thread before dispatching to the background worker, preventing potential tkinter cross-thread access errors.
-- **Fixed: JSON feed detection too strict** — WordPress REST responses without `_links` (stripped by CDN/caching layers) and JSON Feed documents with bare version strings (`"1.0"` / `"1.1"` instead of full jsonfeed.org URL) are now correctly identified. Unrecognized JSON payloads now emit diagnostic `logger.debug()` output.
+- **Fixed: Favicon not appearing in title bar/taskbar** — Corrected path resolution (`parents[2]` → `parents[3]`) in `_apply_icon()` to properly locate `brand/favicon.ico` from the nested `gui/` package.
+- **Fixed: Windows taskbar showing Python icon** — Added `SetCurrentProcessExplicitAppUserModelID` via ctypes before window creation, plus `wm_iconphoto` via PIL/Pillow for robust taskbar icon display.
+- **Fixed: Pylance lint errors** — Suppressed false-positive "possibly unbound" warnings for optional PIL imports that are already guarded by a runtime `_HAS_PIL` check.
 
-## Enhancements
+## PyInstaller Spec Updates
 
-### GUI Output Panel
+- Both GUI and CLI `.spec` files now include `brand/favicon.ico` in `datas` for frozen builds.
+- Both `.spec` files set `icon='brand/favicon.ico'` on the EXE for proper Windows executable icon.
 
-- **Syntax highlighting** — JSON output is color-coded (keys, strings, numbers, booleans, punctuation) using a VS Code dark+ inspired palette via Pygments
-- **Line numbers** — Synchronized gutter with line numbers along the left side
-- **Editable output** — Output text can be manually edited; highlighting re-applies automatically with debounce
-- **Clear button** — Dedicated button to clear the output area; output also auto-clears before each Parse or Construct action
-- **Minify/Pretty toggle** — Independent toggle button to reformat current output between indented and single-line minified JSON
-
-### GUI Branding
-
-- **Window icon** — Application title bar and Windows taskbar now display the shruggie-feedtools favicon (works in both dev and PyInstaller-bundled contexts)
-
-## Dependency Changes
-
-- Added `pygments >= 2.17` to `[gui]` optional dependencies
+---
 
 ## Test Results
 
-- **307 tests passing** (up from 301 in v0.1.0 — 7 new detector tests added)
+- **307 tests passing** (unchanged from v0.1.1 — all existing tests continue to pass)
 
 ---
 
@@ -45,16 +66,16 @@ Bug-fix and enhancement release addressing critical issues found in v0.1.0.
 
 | Artifact | Description |
 |---|---|
-| `shruggie-feedtools-cli-0.1.1-win-x64.exe` | Standalone Windows CLI executable |
-| `shruggie-feedtools-gui-0.1.1-win-x64.exe` | Standalone Windows GUI executable |
-| `shruggie_feedtools-0.1.1.tar.gz` | Source distribution |
-| `shruggie_feedtools-0.1.1-py3-none-any.whl` | Python wheel |
+| `shruggie-feedtools-cli-0.1.2-win-x64.exe` | Standalone Windows CLI executable |
+| `shruggie-feedtools-gui-0.1.2-win-x64.exe` | Standalone Windows GUI executable |
+| `shruggie_feedtools-0.1.2.tar.gz` | Source distribution |
+| `shruggie_feedtools-0.1.2-py3-none-any.whl` | Python wheel |
 
 ---
 
 ## Upgrade Notes
 
-- Drop-in replacement for v0.1.0 — no schema changes, no API changes
+- Drop-in replacement for v0.1.1 — no schema changes, no API changes
 - GUI users: download the new `.exe` and replace the old one
 - pip users: `pip install --upgrade shruggie-feedtools[gui]`
 
