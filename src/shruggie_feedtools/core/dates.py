@@ -36,6 +36,7 @@ def normalize_date(value: str | int | float | None) -> str | None:
 
     # Handle numeric epoch values
     if isinstance(value, (int, float)):
+        logger.debug("normalize_date: handling epoch value %r", value)
         try:
             dt = datetime.fromtimestamp(value, tz=timezone.utc)
             return _format_utc(dt)

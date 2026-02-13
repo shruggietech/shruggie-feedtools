@@ -51,6 +51,8 @@ def parse_wp_rest(
     else:
         posts = []
 
+    logger.debug("wp_rest_adapter: %d posts, base_url=%s", len(posts), base_url)
+
     if config.max_items is not None:
         posts = posts[: config.max_items]
 

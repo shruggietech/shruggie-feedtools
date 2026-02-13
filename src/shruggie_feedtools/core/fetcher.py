@@ -68,6 +68,8 @@ def fetch(url: str, config: ParserConfig | None = None) -> FetchResult:
 
     last_error = ""
     attempts = 1 + config.retries  # initial + retries
+    logger.debug("Fetching URL: %s (attempts=%d, timeout_connect=%.1fs, timeout_read=%.1fs)",
+                 url, attempts, config.timeout_connect, config.timeout_read)
 
     for attempt in range(attempts):
         if attempt > 0:
@@ -114,6 +116,9 @@ def fetch(url: str, config: ParserConfig | None = None) -> FetchResult:
 
             # Success
             resp_headers = dict(response.headers)
+            logger.debug("Fetch success: %s -> %d (%d bytes, content-type=%s)",
+                         url, response.status_code, len(response.content),
+                         resp_headers.get("content-type", "unknown"))
             return FetchResult(
                 ok=True,
                 content=response.content,

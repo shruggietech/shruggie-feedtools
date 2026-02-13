@@ -39,6 +39,8 @@ def parse_json_feed(
 
     feed = _map_feed(data)
     items_raw = data.get("items", [])
+    logger.debug("json_feed_adapter: title=%s, items=%d",
+                 feed.get("title", "")[:60], len(items_raw))
     if config.max_items is not None:
         items_raw = items_raw[: config.max_items]
 

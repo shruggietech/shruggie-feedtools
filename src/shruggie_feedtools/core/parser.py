@@ -121,12 +121,14 @@ def parse_string(
         config = ParserConfig()
 
     raw = content.encode("utf-8") if isinstance(content, str) else content
+    logger.debug("parse_string: %d bytes, source_url=%s", len(raw), source_url)
 
     if not raw or not raw.strip():
         return _error_response("Empty content", SourceOrigin.STRING, source_url)
 
     # Detect format
     feed_type = detect_feed_type(raw)
+    logger.debug("parse_string: detected feed_type=%s", feed_type)
     if feed_type is None:
         return _error_response(
             "Content does not match any known feed format",
@@ -172,10 +174,13 @@ def parse_file(
     except OSError as exc:
         return _error_response(f"File read error: {exc}", SourceOrigin.FILE)
 
+    logger.debug("parse_file: %s (%d bytes)", file_path, len(raw))
+
     if not raw or not raw.strip():
         return _error_response("Empty file content", SourceOrigin.FILE)
 
     feed_type = detect_feed_type(raw)
+    logger.debug("parse_file: detected feed_type=%s", feed_type)
     if feed_type is None:
         return _error_response(
             "File content does not match any known feed format",
@@ -207,13 +212,16 @@ def parse_url(
     if config is None:
         config = ParserConfig()
 
+    logger.debug("parse_url: fetching %s", url)
     result = fetch(url, config)
 
     if not result.ok:
+        logger.debug("parse_url: fetch failed — %s", result.error)
         return _error_response(result.error, SourceOrigin.URL, url)
 
     raw = result.content
     final_url = result.final_url or url
+    logger.debug("parse_url: received %d bytes from %s", len(raw), final_url)
 
     if not raw or not raw.strip():
         return _error_response("Empty response body", SourceOrigin.URL, final_url)
@@ -314,6 +322,7 @@ def _route_to_adapter(
     config: ParserConfig,
 ) -> dict[str, Any]:
     """Route content to the appropriate adapter based on detected type."""
+    logger.debug("Routing to adapter for feed_type=%s", feed_type)
     if feed_type in _XML_TYPES:
         return _feedparser_parse(raw, config)
 

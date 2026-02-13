@@ -37,6 +37,7 @@ def parse_entries(jsonl_path_or_lines: str | Path | list[str]) -> list[dict[str,
         lines = jsonl_path_or_lines
 
     entries: list[dict[str, Any]] = []
+    logger.debug("parse_entries: processing %d lines", len(lines))
 
     for line_no, raw_line in enumerate(lines, start=1):
         line = raw_line.strip()

@@ -28,6 +28,8 @@ from shruggie_feedtools.core.schema import (
     Status,
 )
 
+logger = __import__("logging").getLogger("shruggie_feedtools")
+
 GENERATOR = f"shruggie-feedtools/{__version__}"
 
 
@@ -53,6 +55,8 @@ def build_feed(entries: list[dict[str, Any]], template: FeedTemplate) -> dict[st
 
     batch_size = len(entries)
     items: list[FeedItem] = []
+    logger.debug("build_feed: building %d items from template '%s'",
+                 batch_size, template.feed.title)
 
     for idx, entry in enumerate(entries, start=1):
         text: str = entry.get("text", "")

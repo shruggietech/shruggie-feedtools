@@ -17,7 +17,9 @@ from pathlib import Path
 from typing import Any
 
 from shruggie_feedtools._version import __version__
-from shruggie_feedtools.utils.logging import setup_logging
+from shruggie_feedtools.utils.logging import setup_file_logging, setup_logging
+
+logger = __import__("logging").getLogger("shruggie_feedtools")
 
 # ---------------------------------------------------------------------------
 # Output helpers
@@ -61,6 +63,8 @@ def _handle_parse(args: argparse.Namespace) -> int:
     from shruggie_feedtools.core.parser import (
         parse_urls as _parse_urls,
     )
+
+    logger.debug("parse subcommand invoked with args: %s", vars(args))
 
     config = ParserConfig(
         max_items=args.max_items,
@@ -174,6 +178,8 @@ def _handle_construct(args: argparse.Namespace) -> int:
     from shruggie_feedtools.construct import construct, construct_batch
     from shruggie_feedtools.construct.entry import parse_entries
     from shruggie_feedtools.construct.template import TemplateValidationError, load_template
+
+    logger.debug("construct subcommand invoked with args: %s", vars(args))
 
     # -- Validate template ---------------------------------------------------
     template_path = Path(args.template)
@@ -325,6 +331,10 @@ def _build_parser() -> argparse.ArgumentParser:
     parse_parser.add_argument(
         "--max-items", type=int, help="Limit items per feed"
     )
+    parse_parser.add_argument(
+        "--debug", action="store_true",
+        help="Enable debug logging to a .log file next to the executable",
+    )
 
     # -- Construct subcommand ------------------------------------------------
     construct_parser = subparsers.add_parser(
@@ -372,6 +382,10 @@ def _build_parser() -> argparse.ArgumentParser:
     construct_parser.add_argument(
         "--quiet", action="store_true", help="Suppress logs; only emit JSON"
     )
+    construct_parser.add_argument(
+        "--debug", action="store_true",
+        help="Enable debug logging to a .log file next to the executable",
+    )
 
     return parser
 
@@ -399,7 +413,13 @@ def main(argv: list[str] | None = None) -> None:
 
     # -- Configure logging ---------------------------------------------------
     quiet = getattr(args, "quiet", False)
-    if quiet:
+    debug = getattr(args, "debug", False)
+
+    if debug:
+        log_path = setup_file_logging()
+        logger.debug("CLI started with --debug (log: %s)", log_path)
+        logger.debug("Command: %s, args: %s", args.command, vars(args))
+    elif quiet:
         setup_logging(level=logging.CRITICAL)
     else:
         setup_logging(level=logging.WARNING)

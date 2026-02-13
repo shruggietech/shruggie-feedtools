@@ -1,6 +1,6 @@
 """CustomTkinter GUI application.
 
-Two-mode desktop frontend (Parse / Construct) for shruggie-feedtools.
+Two-mode desktop frontend (Parse / Construct / Settings) for shruggie-feedtools.
 Calls the same library functions as the CLI.
 """
 
@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import logging
 import sys
 import threading
 import tkinter as tk
@@ -33,7 +34,67 @@ try:
 except ImportError:  # pragma: no cover
     _HAS_PYGMENTS = False
 
+try:
+    from PIL import Image as PILImage, ImageTk  # type: ignore[import-untyped]
+    _HAS_PIL = True
+except ImportError:  # pragma: no cover
+    _HAS_PIL = False
+
 from shruggie_feedtools._version import __version__
+from shruggie_feedtools.utils.logging import (
+    disable_file_logging,
+    get_log_file_path,
+    is_file_logging_enabled,
+    setup_file_logging,
+)
+
+logger = logging.getLogger("shruggie_feedtools")
+
+# ---------------------------------------------------------------------------
+# Theme color palettes
+# ---------------------------------------------------------------------------
+
+_THEME_COLORS: dict[str, dict[str, str]] = {
+    "dark": {
+        "editor_bg": "#1a1a1a",
+        "editor_fg": "#d4d4d4",
+        "gutter_bg": "#1e1e1e",
+        "gutter_fg": "#858585",
+        "cursor_color": "#ffffff",
+        "select_bg": "#264f78",
+        "select_fg": "#d4d4d4",
+        "json_key": "#9cdcfe",
+        "json_string": "#ce9178",
+        "json_number": "#b5cea8",
+        "json_const": "#569cd6",
+        "json_punct": "#d4d4d4",
+    },
+    "light": {
+        "editor_bg": "#ffffff",
+        "editor_fg": "#1e1e1e",
+        "gutter_bg": "#f3f3f3",
+        "gutter_fg": "#858585",
+        "cursor_color": "#000000",
+        "select_bg": "#add6ff",
+        "select_fg": "#1e1e1e",
+        "json_key": "#0451a5",
+        "json_string": "#a31515",
+        "json_number": "#098658",
+        "json_const": "#0000ff",
+        "json_punct": "#1e1e1e",
+    },
+}
+
+
+def _set_windows_appusermodelid() -> None:
+    """Set the Windows AppUserModelID so the taskbar groups our icon."""
+    try:
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(  # type: ignore[attr-defined]
+            "com.shruggie.feedtools"
+        )
+    except Exception:
+        pass
 
 # ---------------------------------------------------------------------------
 # Font helpers (§12.6 / Appendix A.5)
@@ -65,8 +126,13 @@ class ShruggieFeedToolsApp(ctk.CTk):
     """Main application window."""
 
     def __init__(self) -> None:
+        # Set Windows taskbar identity BEFORE creating the window
+        _set_windows_appusermodelid()
+
         super().__init__()
 
+        # Theme management — default to dark
+        self._current_theme_mode = "Dark"  # "System", "Light", "Dark"
         ctk.set_appearance_mode("dark")
 
         self.title("Shruggie FeedTools")
@@ -75,6 +141,9 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
         # Apply favicon branding (taskbar + title bar)
         self._apply_icon()
+
+        # Logging state
+        self._logging_enabled = is_file_logging_enabled()
 
         # Fonts
         self._mono_font = ctk.CTkFont(family=_MONO_FAMILY, size=13)
@@ -95,6 +164,8 @@ class ShruggieFeedToolsApp(ctk.CTk):
         # Start in Parse mode
         self._show_parse()
 
+        logger.debug("GUI application initialized (version %s)", __version__)
+
     # -----------------------------------------------------------------------
     # Branding — favicon
     # -----------------------------------------------------------------------
@@ -107,17 +178,28 @@ class ShruggieFeedToolsApp(ctk.CTk):
         if hasattr(sys, "_MEIPASS"):
             candidates.append(Path(sys._MEIPASS) / "brand" / "favicon.ico")  # type: ignore[attr-defined]
         # Development: relative to this source file
-        candidates.append(Path(__file__).resolve().parents[2] / "brand" / "favicon.ico")
+        # app.py is at src/shruggie_feedtools/gui/app.py → parents[3] = project root
+        candidates.append(Path(__file__).resolve().parents[3] / "brand" / "favicon.ico")
         # Development: relative to CWD
         candidates.append(Path("brand") / "favicon.ico")
 
         for icon_path in candidates:
             if icon_path.exists():
+                logger.debug("Loading icon from: %s", icon_path)
                 try:
                     self.iconbitmap(str(icon_path))
-                except Exception:
-                    pass
+                    # Also set via wm_iconphoto for robust taskbar icon
+                    if _HAS_PIL:
+                        pil_img = PILImage.open(str(icon_path))
+                        photo = ImageTk.PhotoImage(pil_img)
+                        self.wm_iconphoto(True, photo)
+                        # Keep a reference to prevent garbage collection
+                        self._icon_photo = photo  # type: ignore[attr-defined]
+                except Exception as exc:
+                    logger.debug("Failed to set icon from %s: %s", icon_path, exc)
                 return
+
+        logger.debug("No favicon.ico found in any candidate path")
 
     # -----------------------------------------------------------------------
     # Sidebar
@@ -150,6 +232,14 @@ class ShruggieFeedToolsApp(ctk.CTk):
             command=self._show_construct,
         )
         self._construct_btn.pack(padx=10, pady=5, fill="x")
+
+        self._settings_btn = ctk.CTkButton(
+            sidebar,
+            text="Settings",
+            font=self._sans_bold,
+            command=self._show_settings,
+        )
+        self._settings_btn.pack(padx=10, pady=5, fill="x")
 
         ver_label = ctk.CTkLabel(
             sidebar,
@@ -231,16 +321,19 @@ class ShruggieFeedToolsApp(ctk.CTk):
         )
         self._format_toggle_btn.grid(row=0, column=col, padx=(2, 4))
 
-        # Editor area — tk.Text with line-number gutter
-        editor_frame = tk.Frame(out_frame, bg="#1a1a1a")
-        editor_frame.grid(row=1, column=0, sticky="nswe", padx=4, pady=4)
-        editor_frame.grid_columnconfigure(1, weight=1)
-        editor_frame.grid_rowconfigure(0, weight=1)
+        # Editor area — use a ctk frame so scrollbars theme properly
+        colors = self._get_theme_colors()
+        self._editor_frame = ctk.CTkFrame(
+            out_frame, fg_color=colors["editor_bg"], corner_radius=4,
+        )
+        self._editor_frame.grid(row=1, column=0, sticky="nswe", padx=4, pady=4)
+        self._editor_frame.grid_columnconfigure(1, weight=1)
+        self._editor_frame.grid_rowconfigure(0, weight=1)
 
         # Line numbers gutter
         self._line_numbers = tk.Text(
-            editor_frame, width=5, padx=4, pady=4,
-            bg="#1e1e1e", fg="#858585", bd=0, highlightthickness=0,
+            self._editor_frame, width=5, padx=4, pady=4,
+            bg=colors["gutter_bg"], fg=colors["gutter_fg"], bd=0, highlightthickness=0,
             font=(self._mono_font.cget("family"), self._mono_font.cget("size")),
             state="disabled", takefocus=0, wrap="none",
             cursor="arrow",
@@ -249,31 +342,40 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
         # Main text widget (editable)
         self._output_box = tk.Text(
-            editor_frame, padx=6, pady=4, bd=0, highlightthickness=0,
-            bg="#1a1a1a", fg="#d4d4d4", insertbackground="#ffffff",
-            selectbackground="#264f78", selectforeground="#d4d4d4",
+            self._editor_frame, padx=6, pady=4, bd=0, highlightthickness=0,
+            bg=colors["editor_bg"], fg=colors["editor_fg"],
+            insertbackground=colors["cursor_color"],
+            selectbackground=colors["select_bg"],
+            selectforeground=colors["select_fg"],
             font=(self._mono_font.cget("family"), self._mono_font.cget("size")),
             wrap="none", undo=True,
         )
         self._output_box.grid(row=0, column=1, sticky="nswe")
 
-        # Scrollbars
-        v_scroll = tk.Scrollbar(editor_frame, orient="vertical",
-                                command=self._sync_scroll_y)
-        v_scroll.grid(row=0, column=2, sticky="ns")
-        h_scroll = tk.Scrollbar(editor_frame, orient="horizontal",
-                                command=self._output_box.xview)
-        h_scroll.grid(row=1, column=1, sticky="we")
+        # Theme-aware scrollbars (CTkScrollbar auto-adapts to appearance mode)
+        self._v_scroll = ctk.CTkScrollbar(
+            self._editor_frame, orientation="vertical",
+            command=self._sync_scroll_y,
+        )
+        self._v_scroll.grid(row=0, column=2, sticky="ns")
 
-        self._output_box.configure(yscrollcommand=lambda *a: self._on_output_yscroll(v_scroll, *a))
-        self._output_box.configure(xscrollcommand=h_scroll.set)
+        self._h_scroll = ctk.CTkScrollbar(
+            self._editor_frame, orientation="horizontal",
+            command=self._output_box.xview,
+        )
+        self._h_scroll.grid(row=1, column=1, sticky="we")
+
+        self._output_box.configure(
+            yscrollcommand=lambda *a: self._on_output_yscroll(self._v_scroll, *a),
+        )
+        self._output_box.configure(xscrollcommand=self._h_scroll.set)
 
         # Configure syntax-highlight tags (VS Code dark+ inspired)
-        self._output_box.tag_configure("json_key", foreground="#9cdcfe")
-        self._output_box.tag_configure("json_string", foreground="#ce9178")
-        self._output_box.tag_configure("json_number", foreground="#b5cea8")
-        self._output_box.tag_configure("json_const", foreground="#569cd6")
-        self._output_box.tag_configure("json_punct", foreground="#d4d4d4")
+        self._output_box.tag_configure("json_key", foreground=colors["json_key"])
+        self._output_box.tag_configure("json_string", foreground=colors["json_string"])
+        self._output_box.tag_configure("json_number", foreground=colors["json_number"])
+        self._output_box.tag_configure("json_const", foreground=colors["json_const"])
+        self._output_box.tag_configure("json_punct", foreground=colors["json_punct"])
 
         # Re-highlight on edits (debounced)
         self._highlight_pending: str | None = None
@@ -287,7 +389,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
         self._output_box.yview(*args)
         self._line_numbers.yview(*args)
 
-    def _on_output_yscroll(self, scrollbar: tk.Scrollbar, *args: Any) -> None:
+    def _on_output_yscroll(self, scrollbar: Any, *args: Any) -> None:
         scrollbar.set(*args)
         self._line_numbers.yview_moveto(args[0])
 
@@ -407,22 +509,32 @@ class ShruggieFeedToolsApp(ctk.CTk):
         "_construct_action_btn", "_tmpl_path_var", "_tmpl_title_label",
         "_construct_text", "_timestamp_var",
     )
+    _MODE_ATTRS_SETTINGS = (
+        "_theme_selector", "_logging_switch", "_log_path_label",
+    )
 
     def _clear_input_frame(self) -> None:
         for child in self._input_frame.winfo_children():
             child.destroy()
         # Remove stale references so hasattr / winfo_exists checks stay correct
-        for attr in (*self._MODE_ATTRS_PARSE, *self._MODE_ATTRS_CONSTRUCT):
+        for attr in (*self._MODE_ATTRS_PARSE, *self._MODE_ATTRS_CONSTRUCT, *self._MODE_ATTRS_SETTINGS):
             with contextlib.suppress(AttributeError):
                 delattr(self, attr)
 
     def _show_parse(self) -> None:
+        logger.debug("Switching to Parse mode")
         self._clear_input_frame()
         self._build_parse_view()
 
     def _show_construct(self) -> None:
+        logger.debug("Switching to Construct mode")
         self._clear_input_frame()
         self._build_construct_view()
+
+    def _show_settings(self) -> None:
+        logger.debug("Switching to Settings mode")
+        self._clear_input_frame()
+        self._build_settings_view()
 
     # -----------------------------------------------------------------------
     # Parse mode (§12.3)
@@ -625,6 +737,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
         opts = self._get_parse_config()
         # Capture widget values on the main thread before spawning worker
         captured = self._capture_parse_input(method)
+        logger.debug("Starting parse: method=%s, opts=%s", method, opts)
 
         def task() -> None:
             try:
@@ -632,7 +745,9 @@ class ShruggieFeedToolsApp(ctk.CTk):
                 output_text = json.dumps(
                     result, indent=2 if opts.get("pretty_print") else None, ensure_ascii=False
                 )
+                logger.debug("Parse completed successfully (status=%s)", result.get("status", "?"))
             except Exception as exc:
+                logger.error("Parse failed with exception: %s", exc, exc_info=True)
                 output_text = json.dumps(
                     {"status": "error", "message": str(exc)}, indent=2, ensure_ascii=False
                 )
@@ -653,17 +768,20 @@ class ShruggieFeedToolsApp(ctk.CTk):
         )
 
         method = captured["method"]
+        logger.debug("_do_parse: method=%s, config=%s", method, config)
 
         if method == "url":
             url = captured["url"]
             if not url:
                 return {"status": "error", "message": "No URL provided."}
+            logger.debug("Parsing URL: %s", url)
             return _pu(url, config)
 
         elif method == "file":
             fp = captured["file"]
             if not fp:
                 return {"status": "error", "message": "No file selected."}
+            logger.debug("Parsing file: %s", fp)
             return _pf(Path(fp), config)
 
         elif method == "batch":
@@ -675,6 +793,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
             ]
             if not urls:
                 return {"status": "error", "message": "No URLs provided."}
+            logger.debug("Batch parsing %d URLs", len(urls))
             results = _pus(urls, config)
             return results
 
@@ -783,12 +902,15 @@ class ShruggieFeedToolsApp(ctk.CTk):
         tmpl_path = self._tmpl_path_var.get().strip()
         text = self._construct_text.get("1.0", "end").rstrip("\n")
         timestamp = self._timestamp_var.get().strip()
+        logger.debug("Starting construct: template=%s, timestamp=%s", tmpl_path, timestamp)
 
         def task() -> None:
             try:
                 result = self._do_construct(tmpl_path, text, timestamp)
                 output_text = json.dumps(result, indent=2, ensure_ascii=False)
+                logger.debug("Construct completed successfully")
             except Exception as exc:
+                logger.error("Construct failed with exception: %s", exc, exc_info=True)
                 output_text = json.dumps(
                     {"status": "error", "message": str(exc)}, indent=2, ensure_ascii=False
                 )
@@ -809,6 +931,179 @@ class ShruggieFeedToolsApp(ctk.CTk):
             return {"status": "error", "message": "No timestamp provided."}
 
         return construct(text, timestamp, Path(tmpl_path))
+
+    # -----------------------------------------------------------------------
+    # Settings mode
+    # -----------------------------------------------------------------------
+
+    def _build_settings_view(self) -> None:
+        frame = self._input_frame
+        frame.grid_columnconfigure(0, weight=1)
+
+        # Section: Application Theme
+        theme_header = ctk.CTkLabel(
+            frame, text="Application Theme", font=self._sans_bold,
+        )
+        theme_header.grid(row=0, column=0, sticky="w", padx=12, pady=(12, 4))
+
+        theme_desc = ctk.CTkLabel(
+            frame,
+            text="Choose how the application appears. \"Auto\" follows the operating system setting.",
+            font=ctk.CTkFont(size=12),
+            text_color="gray",
+        )
+        theme_desc.grid(row=1, column=0, sticky="w", padx=12, pady=(0, 6))
+
+        # Map internal mode name to display label
+        current_display = {
+            "System": "Auto (Default)",
+            "Light": "Light",
+            "Dark": "Dark",
+        }.get(self._current_theme_mode, "Auto (Default)")
+
+        self._theme_selector = ctk.CTkSegmentedButton(
+            frame,
+            values=["Auto (Default)", "Light", "Dark"],
+            command=self._on_theme_change,
+            font=self._sans_font,
+        )
+        self._theme_selector.set(current_display)
+        self._theme_selector.grid(row=2, column=0, sticky="w", padx=12, pady=(0, 16))
+
+        # Divider
+        div1 = ctk.CTkFrame(frame, height=2, fg_color="gray30")
+        div1.grid(row=3, column=0, sticky="we", padx=12, pady=4)
+
+        # Section: Debug Logging
+        log_header = ctk.CTkLabel(
+            frame, text="Debug Logging", font=self._sans_bold,
+        )
+        log_header.grid(row=4, column=0, sticky="w", padx=12, pady=(12, 4))
+
+        log_desc = ctk.CTkLabel(
+            frame,
+            text="When enabled, detailed debug information is written to a log file\n"
+                 "located next to the application executable.",
+            font=ctk.CTkFont(size=12),
+            text_color="gray",
+            justify="left",
+        )
+        log_desc.grid(row=5, column=0, sticky="w", padx=12, pady=(0, 6))
+
+        switch_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        switch_frame.grid(row=6, column=0, sticky="w", padx=12, pady=(0, 4))
+
+        ctk.CTkLabel(
+            switch_frame, text="Enable Logging:", font=self._sans_font,
+        ).pack(side="left", padx=(0, 10))
+
+        self._logging_switch = ctk.CTkSwitch(
+            switch_frame,
+            text="",
+            command=self._toggle_logging,
+            font=self._sans_font,
+            onvalue=1,
+            offvalue=0,
+        )
+        if self._logging_enabled:
+            self._logging_switch.select()
+        else:
+            self._logging_switch.deselect()
+        self._logging_switch.pack(side="left")
+
+        # Show log file path
+        log_path = get_log_file_path()
+        self._log_path_label = ctk.CTkLabel(
+            frame,
+            text=f"Log file: {log_path}",
+            font=ctk.CTkFont(size=11),
+            text_color="gray",
+        )
+        self._log_path_label.grid(row=7, column=0, sticky="w", padx=12, pady=(4, 12))
+
+    # -----------------------------------------------------------------------
+    # Theme management
+    # -----------------------------------------------------------------------
+
+    def _get_effective_theme(self) -> str:
+        """Return 'dark' or 'light' based on current effective appearance."""
+        mode = ctk.get_appearance_mode()  # Returns "Dark" or "Light"
+        return mode.lower()
+
+    def _get_theme_colors(self) -> dict[str, str]:
+        """Return the color palette for the current effective theme."""
+        return _THEME_COLORS.get(self._get_effective_theme(), _THEME_COLORS["dark"])
+
+    def _on_theme_change(self, choice: str) -> None:
+        """Handle theme selection change from Settings."""
+        mode_map = {
+            "Auto (Default)": "System",
+            "Light": "Light",
+            "Dark": "Dark",
+        }
+        mode = mode_map.get(choice, "System")
+        self._current_theme_mode = mode
+        logger.debug("Theme changed to: %s", mode)
+
+        ctk.set_appearance_mode(mode.lower())
+
+        # Update editor area colors after a short delay for CTk to apply
+        self.after(50, self._apply_editor_theme)
+
+    def _apply_editor_theme(self) -> None:
+        """Update the text editor and gutter colors to match current theme."""
+        colors = self._get_theme_colors()
+        logger.debug("Applying editor theme: %s", self._get_effective_theme())
+
+        # Update editor frame background
+        if hasattr(self, "_editor_frame") and self._widget_alive(self._editor_frame):
+            self._editor_frame.configure(fg_color=colors["editor_bg"])
+
+        # Update output text widget
+        if hasattr(self, "_output_box") and self._widget_alive(self._output_box):
+            self._output_box.configure(
+                bg=colors["editor_bg"],
+                fg=colors["editor_fg"],
+                insertbackground=colors["cursor_color"],
+                selectbackground=colors["select_bg"],
+                selectforeground=colors["select_fg"],
+            )
+            # Update syntax-highlight tag colors
+            self._output_box.tag_configure("json_key", foreground=colors["json_key"])
+            self._output_box.tag_configure("json_string", foreground=colors["json_string"])
+            self._output_box.tag_configure("json_number", foreground=colors["json_number"])
+            self._output_box.tag_configure("json_const", foreground=colors["json_const"])
+            self._output_box.tag_configure("json_punct", foreground=colors["json_punct"])
+            # Re-apply highlighting
+            self._apply_json_highlighting()
+
+        # Update line numbers gutter
+        if hasattr(self, "_line_numbers") and self._widget_alive(self._line_numbers):
+            self._line_numbers.configure(
+                bg=colors["gutter_bg"],
+                fg=colors["gutter_fg"],
+            )
+
+    # -----------------------------------------------------------------------
+    # Logging toggle
+    # -----------------------------------------------------------------------
+
+    def _toggle_logging(self) -> None:
+        """Enable or disable debug file logging."""
+        if hasattr(self, "_logging_switch"):
+            enabled = self._logging_switch.get() == 1
+        else:
+            enabled = not self._logging_enabled
+
+        if enabled and not self._logging_enabled:
+            log_path = setup_file_logging()
+            self._logging_enabled = True
+            logger.debug("GUI: Debug logging enabled by user")
+            logger.debug("Application version: %s", __version__)
+        elif not enabled and self._logging_enabled:
+            logger.debug("GUI: Debug logging disabled by user")
+            disable_file_logging()
+            self._logging_enabled = False
 
     # -----------------------------------------------------------------------
     # Threading helpers (§12.7)
@@ -859,6 +1154,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
 def main() -> None:
     """Launch the GUI application."""
+    logger.debug("Launching Shruggie FeedTools GUI v%s", __version__)
     app = ShruggieFeedToolsApp()
     app.mainloop()
 

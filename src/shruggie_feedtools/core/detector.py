@@ -42,6 +42,7 @@ def detect_feed_type(content: bytes) -> str | None:
         known feed format.
     """
     if not content:
+        logger.debug("detect_feed_type: empty content")
         return None
 
     # Strip BOM if present (UTF-8 BOM: EF BB BF)
@@ -56,13 +57,18 @@ def detect_feed_type(content: bytes) -> str | None:
 
     # JSON path
     if first_byte in (b"{", b"["):
-        return _detect_json_type(stripped)
+        result = _detect_json_type(stripped)
+        logger.debug("detect_feed_type: JSON path -> %s", result)
+        return result
 
     # XML path
     if first_byte == b"<":
         # Pass BOM-stripped content to feedparser
-        return _detect_xml_type(stripped)
+        result = _detect_xml_type(stripped)
+        logger.debug("detect_feed_type: XML path -> %s", result)
+        return result
 
+    logger.debug("detect_feed_type: unrecognized first byte %r", first_byte)
     return None
 
 

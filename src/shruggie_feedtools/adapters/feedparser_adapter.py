@@ -56,6 +56,8 @@ def parse_feed(
     # Determine source type
     version = result.get("version", "") or ""
     source_type = _VERSION_MAP.get(version, "rss2")
+    logger.debug("feedparser_adapter: version=%s, source_type=%s, entries=%d",
+                 version, source_type, len(result.entries or []))
 
     # Extract namespace declarations for prefix normalization
     namespaces = result.get("namespaces", {})

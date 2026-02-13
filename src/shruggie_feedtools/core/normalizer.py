@@ -40,6 +40,7 @@ def normalize_feed(
         config = ParserConfig()
 
     feed: dict[str, Any] = {}
+    logger.debug("normalize_feed: processing feed-level fields")
 
     feed["title"] = _str(intermediate, "title")
     feed["link"] = _str(intermediate, "link")
@@ -101,6 +102,7 @@ def normalize_item(
         config = ParserConfig()
 
     item: dict[str, Any] = {}
+    logger.debug("normalize_item: processing item title=%s", _str(intermediate, "title")[:60])
 
     item["title"] = _str(intermediate, "title")
     item["link"] = _str(intermediate, "link")

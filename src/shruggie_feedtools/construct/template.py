@@ -172,9 +172,11 @@ def load_template(path_or_dict: str | Path | dict[str, Any]) -> FeedTemplate:
         If *path_or_dict* is a path that does not exist.
     """
     if isinstance(path_or_dict, dict):
+        logger.debug("load_template: validating dict template")
         return _validate_template(path_or_dict)
 
     path = Path(path_or_dict)
+    logger.debug("load_template: loading from %s", path)
 
     # Check cache
     cache_key = str(path.resolve())
