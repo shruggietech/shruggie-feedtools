@@ -143,8 +143,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
         self.minsize(900, 600)
         self.geometry("1100x720")
 
-        # Apply favicon branding (taskbar + title bar)
-        self._apply_icon()
+        # Favicon branding is deferred via self.after() — see end of __init__
 
         # Logging state
         self._logging_enabled = is_file_logging_enabled()
@@ -154,12 +153,18 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
         # Fonts
         self._mono_font = ctk.CTkFont(family=_MONO_FAMILY, size=self._font_size)
+        self._construct_text_font = ctk.CTkFont(family=_MONO_FAMILY, size=12)
         self._sans_font = ctk.CTkFont(family=_SANS_FAMILY, size=13)
         self._sans_bold = ctk.CTkFont(family=_SANS_FAMILY, size=13, weight="bold")
         self._title_font = ctk.CTkFont(family=_TITLE_FAMILY, size=15, weight="bold")
 
         # Threading guard
         self._busy = False
+
+        # Per-mode output text storage (separate outputs for Parse / Construct)
+        self._parse_output_text = ""
+        self._construct_output_text = ""
+        self._current_mode = "parse"  # "parse", "construct", "settings"
 
         # ---- Layout --------------------------------------------------------
         self.grid_columnconfigure(1, weight=1)
@@ -171,6 +176,9 @@ class ShruggieFeedToolsApp(ctk.CTk):
         # Start in Parse mode
         self._show_parse()
 
+        # Defer icon application so CustomTkinter finishes its own init first
+        self.after(200, self._apply_icon)
+
         logger.debug("GUI application initialized (version %s)", __version__)
 
     # -----------------------------------------------------------------------
@@ -178,35 +186,62 @@ class ShruggieFeedToolsApp(ctk.CTk):
     # -----------------------------------------------------------------------
 
     def _apply_icon(self) -> None:
-        """Set the window icon from brand/favicon.ico."""
-        # Try multiple candidate paths (dev layout, PyInstaller bundle)
-        candidates = []
-        # PyInstaller bundle: files are extracted to sys._MEIPASS
+        """Set the window icon from brand/favicon.ico (and .png fallback)."""
+        # Try multiple candidate base directories
+        base_dirs: list[Path] = []
         if hasattr(sys, "_MEIPASS"):
-            candidates.append(Path(sys._MEIPASS) / "brand" / "favicon.ico")  # type: ignore[attr-defined]
-        # Development: relative to this source file
-        # app.py is at src/shruggie_feedtools/gui/app.py → parents[3] = project root
-        candidates.append(Path(__file__).resolve().parents[3] / "brand" / "favicon.ico")
-        # Development: relative to CWD
-        candidates.append(Path("brand") / "favicon.ico")
+            base_dirs.append(Path(sys._MEIPASS))  # type: ignore[attr-defined]
+        base_dirs.append(Path(__file__).resolve().parents[3])
+        base_dirs.append(Path.cwd())
 
-        for icon_path in candidates:
-            if icon_path.exists():
-                logger.debug("Loading icon from: %s", icon_path)
-                try:
-                    self.iconbitmap(str(icon_path))
-                    # Also set via wm_iconphoto for robust taskbar icon
-                    if _HAS_PIL:
-                        pil_img = PILImage.open(str(icon_path))  # type: ignore[union-attr]
-                        photo = ImageTk.PhotoImage(pil_img)  # type: ignore[union-attr]
-                        self.wm_iconphoto(True, photo)
-                        # Keep a reference to prevent garbage collection
-                        self._icon_photo = photo  # type: ignore[attr-defined]
-                except Exception as exc:
-                    logger.debug("Failed to set icon from %s: %s", icon_path, exc)
-                return
+        ico_path: Path | None = None
+        png_path: Path | None = None
+        for base in base_dirs:
+            candidate_ico = base / "brand" / "favicon.ico"
+            candidate_png = base / "brand" / "favicon.png"
+            if ico_path is None and candidate_ico.exists():
+                ico_path = candidate_ico
+            if png_path is None and candidate_png.exists():
+                png_path = candidate_png
 
-        logger.debug("No favicon.ico found in any candidate path")
+        if ico_path is None and png_path is None:
+            logger.debug("No favicon found in any candidate path")
+            return
+
+        logger.debug("Loading icon from: ico=%s, png=%s", ico_path, png_path)
+
+        # 1. Set title-bar icon via .ico
+        if ico_path is not None:
+            try:
+                self.iconbitmap(str(ico_path))
+            except Exception as exc:
+                logger.debug("iconbitmap failed: %s", exc)
+
+        # 2. Set taskbar icon via wm_iconphoto (PIL → ICO, else PNG fallback)
+        try:
+            if _HAS_PIL and ico_path is not None:
+                pil_img = PILImage.open(str(ico_path))  # type: ignore[union-attr]
+                photo = ImageTk.PhotoImage(pil_img)  # type: ignore[union-attr]
+                self.wm_iconphoto(True, photo)
+                self._icon_photo = photo  # prevent GC
+            elif png_path is not None:
+                photo_png = tk.PhotoImage(file=str(png_path))
+                self.wm_iconphoto(True, photo_png)
+                self._icon_photo = photo_png  # prevent GC
+        except Exception as exc:
+            logger.debug("wm_iconphoto failed: %s", exc)
+
+        # 3. Re-apply iconbitmap after a delay to override CTk default icon
+        if ico_path is not None:
+            _ico = str(ico_path)
+            self.after(300, lambda: self._safe_iconbitmap(_ico))
+
+    def _safe_iconbitmap(self, path: str) -> None:
+        """Re-apply iconbitmap; swallow errors if window is closing."""
+        try:
+            self.iconbitmap(path)
+        except Exception:
+            pass
 
     # -----------------------------------------------------------------------
     # Sidebar
@@ -291,10 +326,11 @@ class ShruggieFeedToolsApp(ctk.CTk):
     }
 
     def _build_output_panel(self) -> None:
-        out_frame = ctk.CTkFrame(self._work_frame)
-        out_frame.grid(row=1, column=0, sticky="nswe", padx=4, pady=(2, 4))
-        out_frame.grid_columnconfigure(0, weight=1)
-        out_frame.grid_rowconfigure(1, weight=1)
+        self._output_panel_frame = ctk.CTkFrame(self._work_frame)
+        self._output_panel_frame.grid(row=1, column=0, sticky="nswe", padx=4, pady=(2, 4))
+        self._output_panel_frame.grid_columnconfigure(0, weight=1)
+        self._output_panel_frame.grid_rowconfigure(1, weight=1)
+        out_frame = self._output_panel_frame
 
         # Header row
         header = ctk.CTkFrame(out_frame, fg_color="transparent")
@@ -470,6 +506,14 @@ class ShruggieFeedToolsApp(ctk.CTk):
     def _copy_output(self) -> None:
         self.clipboard_clear()
         self.clipboard_append(self._output_box.get("1.0", "end-1c"))
+        # Visual feedback: flash the button green with "Copied!" text
+        self._copy_btn.configure(text="Copied!", fg_color="#2ea043")
+        self.after(1500, self._reset_copy_btn)
+
+    def _reset_copy_btn(self) -> None:
+        """Restore the Copy button to its default appearance."""
+        if self._widget_alive(self._copy_btn):
+            self._copy_btn.configure(text="Copy", fg_color=("#3a7ebf", "#1f538d"))
 
     def _save_output(self) -> None:
         path = filedialog.asksaveasfilename(
@@ -529,20 +573,69 @@ class ShruggieFeedToolsApp(ctk.CTk):
             with contextlib.suppress(AttributeError):
                 delattr(self, attr)
 
+    def _save_current_output(self) -> None:
+        """Persist the current output text to the active mode's storage."""
+        if not (hasattr(self, "_output_box") and self._widget_alive(self._output_box)):
+            return
+        text = self._output_box.get("1.0", "end-1c")
+        if self._current_mode == "parse":
+            self._parse_output_text = text
+        elif self._current_mode == "construct":
+            self._construct_output_text = text
+
+    def _restore_output_for_mode(self, mode: str) -> None:
+        """Restore the saved output text for the given mode."""
+        text = self._parse_output_text if mode == "parse" else self._construct_output_text
+        self._set_output(text)
+
+    def _show_output_panel(self) -> None:
+        """Ensure the output panel is visible."""
+        if hasattr(self, "_output_panel_frame"):
+            self._output_panel_frame.grid(row=1, column=0, sticky="nswe", padx=4, pady=(2, 4))
+
+    def _hide_output_panel(self) -> None:
+        """Hide the output panel without destroying it."""
+        if hasattr(self, "_output_panel_frame"):
+            self._output_panel_frame.grid_remove()
+
+    def _set_active_tab(self, active_btn: ctk.CTkButton) -> None:
+        """Highlight the active sidebar button; reset the others."""
+        default_fg = ("#3a7ebf", "#1f538d")
+        active_fg = ("#1a5c9e", "#144870")
+        for btn in (self._parse_btn, self._construct_btn, self._settings_btn):
+            if btn is active_btn:
+                btn.configure(fg_color=active_fg)
+            else:
+                btn.configure(fg_color=default_fg)
+
     def _show_parse(self) -> None:
         logger.debug("Switching to Parse mode")
+        self._save_current_output()
+        self._current_mode = "parse"
         self._clear_input_frame()
+        self._show_output_panel()
         self._build_parse_view()
+        self._restore_output_for_mode("parse")
+        self._set_active_tab(self._parse_btn)
 
     def _show_construct(self) -> None:
         logger.debug("Switching to Construct mode")
+        self._save_current_output()
+        self._current_mode = "construct"
         self._clear_input_frame()
+        self._show_output_panel()
         self._build_construct_view()
+        self._restore_output_for_mode("construct")
+        self._set_active_tab(self._construct_btn)
 
     def _show_settings(self) -> None:
         logger.debug("Switching to Settings mode")
+        self._save_current_output()
+        self._current_mode = "settings"
         self._clear_input_frame()
+        self._hide_output_panel()
         self._build_settings_view()
+        self._set_active_tab(self._settings_btn)
 
     # -----------------------------------------------------------------------
     # Parse mode (§12.3)
@@ -850,7 +943,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
         ctk.CTkLabel(frame, text="Text:", font=self._sans_font).grid(
             row=1, column=0, sticky="w", padx=8, pady=(4, 0)
         )
-        self._construct_text = ctk.CTkTextbox(frame, font=self._mono_font, height=100)
+        self._construct_text = ctk.CTkTextbox(frame, font=self._construct_text_font, height=100)
         self._construct_text.grid(row=2, column=0, sticky="nswe", padx=8, pady=2)
 
         # -- Timestamp -------------------------------------------------------
@@ -884,8 +977,8 @@ class ShruggieFeedToolsApp(ctk.CTk):
     def _browse_template(self) -> None:
         path = filedialog.askopenfilename(
             filetypes=[
-                ("Feed template", "*.feedtemplate.json"),
                 ("JSON files", "*.json"),
+                ("Feed template", "*.feedtemplate.json"),
                 ("All files", "*.*"),
             ]
         )
@@ -958,7 +1051,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
             frame,
             text="Choose how the application appears. \"Auto\" follows the operating system setting.",
             font=ctk.CTkFont(size=12),
-            text_color="gray",
+            text_color=("gray30", "gray70"),
         )
         theme_desc.grid(row=1, column=0, sticky="w", padx=12, pady=(0, 6))
 
@@ -993,7 +1086,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
             text="When enabled, detailed debug information is written to a log file\n"
                  "located next to the application executable.",
             font=ctk.CTkFont(size=12),
-            text_color="gray",
+            text_color=("gray30", "gray70"),
             justify="left",
         )
         log_desc.grid(row=5, column=0, sticky="w", padx=12, pady=(0, 6))
@@ -1025,7 +1118,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
             frame,
             text=f"Log file: {log_path}",
             font=ctk.CTkFont(size=11),
-            text_color="gray",
+            text_color=("gray30", "gray70"),
         )
         self._log_path_label.grid(row=7, column=0, sticky="w", padx=12, pady=(4, 12))
 
@@ -1043,7 +1136,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
             frame,
             text=f"Set the font size for the output viewer ({_FONT_SIZE_MIN}–{_FONT_SIZE_MAX} pt).",
             font=ctk.CTkFont(size=12),
-            text_color="gray",
+            text_color=("gray30", "gray70"),
         )
         font_desc.grid(row=10, column=0, sticky="w", padx=12, pady=(0, 6))
 
@@ -1240,6 +1333,11 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
     def _finish_operation(self, output_text: str) -> None:
         self._set_output(output_text)
+        # Persist output to the active mode's storage
+        if self._current_mode == "parse":
+            self._parse_output_text = output_text
+        elif self._current_mode == "construct":
+            self._construct_output_text = output_text
         self._set_busy(False)
 
 
