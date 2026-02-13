@@ -8,7 +8,9 @@ from __future__ import annotations
 
 import contextlib
 import json
+import sys
 import threading
+import tkinter as tk
 from datetime import UTC, datetime
 from pathlib import Path
 from tkinter import filedialog
@@ -21,6 +23,15 @@ except ImportError as _exc:  # pragma: no cover
         "customtkinter is required for the GUI.  Install it with:\n"
         "  pip install shruggie-feedtools[gui]"
     ) from _exc
+
+try:
+    from pygments import lex
+    from pygments.lexers import JsonLexer
+    from pygments.token import Token
+
+    _HAS_PYGMENTS = True
+except ImportError:  # pragma: no cover
+    _HAS_PYGMENTS = False
 
 from shruggie_feedtools._version import __version__
 
@@ -62,6 +73,9 @@ class ShruggieFeedToolsApp(ctk.CTk):
         self.minsize(900, 600)
         self.geometry("1100x720")
 
+        # Apply favicon branding (taskbar + title bar)
+        self._apply_icon()
+
         # Fonts
         self._mono_font = ctk.CTkFont(family=_MONO_FAMILY, size=13)
         self._sans_font = ctk.CTkFont(family=_SANS_FAMILY, size=13)
@@ -80,6 +94,30 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
         # Start in Parse mode
         self._show_parse()
+
+    # -----------------------------------------------------------------------
+    # Branding — favicon
+    # -----------------------------------------------------------------------
+
+    def _apply_icon(self) -> None:
+        """Set the window icon from brand/favicon.ico."""
+        # Try multiple candidate paths (dev layout, PyInstaller bundle)
+        candidates = []
+        # PyInstaller bundle: files are extracted to sys._MEIPASS
+        if hasattr(sys, "_MEIPASS"):
+            candidates.append(Path(sys._MEIPASS) / "brand" / "favicon.ico")  # type: ignore[attr-defined]
+        # Development: relative to this source file
+        candidates.append(Path(__file__).resolve().parents[2] / "brand" / "favicon.ico")
+        # Development: relative to CWD
+        candidates.append(Path("brand") / "favicon.ico")
+
+        for icon_path in candidates:
+            if icon_path.exists():
+                try:
+                    self.iconbitmap(str(icon_path))
+                except Exception:
+                    pass
+                return
 
     # -----------------------------------------------------------------------
     # Sidebar
@@ -140,8 +178,20 @@ class ShruggieFeedToolsApp(ctk.CTk):
         self._build_output_panel()
 
     # -----------------------------------------------------------------------
-    # Output panel (§12.5)
+    # Output panel (§12.5) — editable, syntax-highlighted, with line numbers
     # -----------------------------------------------------------------------
+
+    # Pygments token → tag-name map (subset for JSON)
+    _TOKEN_TAGS: dict[str, str] = {
+        "Token.Name.Tag": "json_key",
+        "Token.Literal.String.Double": "json_string",
+        "Token.Literal.String.Single": "json_string",
+        "Token.Literal.Number.Integer": "json_number",
+        "Token.Literal.Number.Float": "json_number",
+        "Token.Keyword.Constant": "json_const",      # true / false / null
+        "Token.Punctuation": "json_punct",
+        "Token.Name.Attribute": "json_key",
+    }
 
     def _build_output_panel(self) -> None:
         out_frame = ctk.CTkFrame(self._work_frame)
@@ -158,37 +208,159 @@ class ShruggieFeedToolsApp(ctk.CTk):
             row=0, column=0, sticky="w"
         )
 
+        col = 1
         self._copy_btn = ctk.CTkButton(
             header, text="Copy", width=70, font=self._sans_font, command=self._copy_output
         )
-        self._copy_btn.grid(row=0, column=1, padx=(4, 2))
+        self._copy_btn.grid(row=0, column=col, padx=(4, 2)); col += 1
 
         self._save_btn = ctk.CTkButton(
             header, text="Save", width=70, font=self._sans_font, command=self._save_output
         )
-        self._save_btn.grid(row=0, column=2, padx=(2, 4))
+        self._save_btn.grid(row=0, column=col, padx=(2, 2)); col += 1
 
-        # Text box
-        self._output_box = ctk.CTkTextbox(
-            out_frame,
-            font=self._mono_font,
-            state="disabled",
-            wrap="none",
+        self._clear_btn = ctk.CTkButton(
+            header, text="Clear", width=70, font=self._sans_font, command=self._clear_output
         )
-        self._output_box.grid(row=1, column=0, sticky="nswe", padx=4, pady=4)
+        self._clear_btn.grid(row=0, column=col, padx=(2, 2)); col += 1
+
+        self._minify_var = False  # toggle state: False=pretty, True=minified
+        self._format_toggle_btn = ctk.CTkButton(
+            header, text="Minify", width=80, font=self._sans_font,
+            command=self._toggle_output_format,
+        )
+        self._format_toggle_btn.grid(row=0, column=col, padx=(2, 4))
+
+        # Editor area — tk.Text with line-number gutter
+        editor_frame = tk.Frame(out_frame, bg="#1a1a1a")
+        editor_frame.grid(row=1, column=0, sticky="nswe", padx=4, pady=4)
+        editor_frame.grid_columnconfigure(1, weight=1)
+        editor_frame.grid_rowconfigure(0, weight=1)
+
+        # Line numbers gutter
+        self._line_numbers = tk.Text(
+            editor_frame, width=5, padx=4, pady=4,
+            bg="#1e1e1e", fg="#858585", bd=0, highlightthickness=0,
+            font=(self._mono_font.cget("family"), self._mono_font.cget("size")),
+            state="disabled", takefocus=0, wrap="none",
+            cursor="arrow",
+        )
+        self._line_numbers.grid(row=0, column=0, sticky="ns")
+
+        # Main text widget (editable)
+        self._output_box = tk.Text(
+            editor_frame, padx=6, pady=4, bd=0, highlightthickness=0,
+            bg="#1a1a1a", fg="#d4d4d4", insertbackground="#ffffff",
+            selectbackground="#264f78", selectforeground="#d4d4d4",
+            font=(self._mono_font.cget("family"), self._mono_font.cget("size")),
+            wrap="none", undo=True,
+        )
+        self._output_box.grid(row=0, column=1, sticky="nswe")
+
+        # Scrollbars
+        v_scroll = tk.Scrollbar(editor_frame, orient="vertical",
+                                command=self._sync_scroll_y)
+        v_scroll.grid(row=0, column=2, sticky="ns")
+        h_scroll = tk.Scrollbar(editor_frame, orient="horizontal",
+                                command=self._output_box.xview)
+        h_scroll.grid(row=1, column=1, sticky="we")
+
+        self._output_box.configure(yscrollcommand=lambda *a: self._on_output_yscroll(v_scroll, *a))
+        self._output_box.configure(xscrollcommand=h_scroll.set)
+
+        # Configure syntax-highlight tags (VS Code dark+ inspired)
+        self._output_box.tag_configure("json_key", foreground="#9cdcfe")
+        self._output_box.tag_configure("json_string", foreground="#ce9178")
+        self._output_box.tag_configure("json_number", foreground="#b5cea8")
+        self._output_box.tag_configure("json_const", foreground="#569cd6")
+        self._output_box.tag_configure("json_punct", foreground="#d4d4d4")
+
+        # Re-highlight on edits (debounced)
+        self._highlight_pending: str | None = None
+        self._output_box.bind("<<Modified>>", self._on_output_modified)
+        self._output_box.bind("<KeyRelease>", lambda _e: self._schedule_line_update())
+        self._output_box.bind("<Configure>", lambda _e: self._update_line_numbers())
+
+    # ---- Scroll sync -------------------------------------------------------
+
+    def _sync_scroll_y(self, *args: Any) -> None:
+        self._output_box.yview(*args)
+        self._line_numbers.yview(*args)
+
+    def _on_output_yscroll(self, scrollbar: tk.Scrollbar, *args: Any) -> None:
+        scrollbar.set(*args)
+        self._line_numbers.yview_moveto(args[0])
+
+    # ---- Line numbers ------------------------------------------------------
+
+    def _update_line_numbers(self) -> None:
+        self._line_numbers.configure(state="normal")
+        self._line_numbers.delete("1.0", "end")
+        content = self._output_box.get("1.0", "end-1c")
+        line_count = content.count("\n") + 1 if content else 1
+        numbers = "\n".join(str(i) for i in range(1, line_count + 1))
+        self._line_numbers.insert("1.0", numbers)
+        self._line_numbers.configure(state="disabled")
+        # Sync scroll position
+        self._line_numbers.yview_moveto(self._output_box.yview()[0])
+
+    def _schedule_line_update(self) -> None:
+        self.after_idle(self._update_line_numbers)
+
+    # ---- Syntax highlighting -----------------------------------------------
+
+    def _apply_json_highlighting(self) -> None:
+        """Apply Pygments-based JSON syntax highlighting to the output box."""
+        if not _HAS_PYGMENTS:
+            return
+        # Remove old tags
+        for tag_name in self._TOKEN_TAGS.values():
+            self._output_box.tag_remove(tag_name, "1.0", "end")
+        content = self._output_box.get("1.0", "end-1c")
+        if not content.strip():
+            return
+        try:
+            lexer = JsonLexer()  # type: ignore[possibly-unbound]
+            tokens = lex(content, lexer)  # type: ignore[possibly-unbound]
+            index = "1.0"
+            for tok_type, tok_value in tokens:
+                end_index = self._output_box.index(f"{index}+{len(tok_value)}c")
+                tag_name = self._TOKEN_TAGS.get(str(tok_type))
+                if tag_name:
+                    self._output_box.tag_add(tag_name, index, end_index)
+                index = end_index
+        except Exception:
+            pass  # If highlighting fails, text is still readable
+
+    def _on_output_modified(self, _event: Any = None) -> None:
+        if self._output_box.edit_modified():
+            self._output_box.edit_modified(False)
+            # Debounce highlighting
+            if self._highlight_pending:
+                self.after_cancel(self._highlight_pending)
+            self._highlight_pending = self.after(150, self._do_rehighlight)
+
+    def _do_rehighlight(self) -> None:
+        self._highlight_pending = None
+        self._apply_json_highlighting()
+        self._update_line_numbers()
+
+    # ---- Output read/write -------------------------------------------------
 
     def _set_output(self, text: str) -> None:
-        self._output_box.configure(state="normal")
         self._output_box.delete("1.0", "end")
         self._output_box.insert("1.0", text)
-        self._output_box.configure(state="disabled")
+        self._output_box.edit_modified(False)
+        self._output_box.edit_reset()  # Clear undo stack for new content
+        self._apply_json_highlighting()
+        self._update_line_numbers()
 
     def _clear_output(self) -> None:
         self._set_output("")
 
     def _copy_output(self) -> None:
         self.clipboard_clear()
-        self.clipboard_append(self._output_box.get("1.0", "end").rstrip("\n"))
+        self.clipboard_append(self._output_box.get("1.0", "end-1c"))
 
     def _save_output(self) -> None:
         path = filedialog.asksaveasfilename(
@@ -197,17 +369,52 @@ class ShruggieFeedToolsApp(ctk.CTk):
         )
         if path:
             Path(path).write_text(
-                self._output_box.get("1.0", "end").rstrip("\n") + "\n",
+                self._output_box.get("1.0", "end-1c") + "\n",
                 encoding="utf-8",
             )
+
+    def _toggle_output_format(self) -> None:
+        """Toggle output between pretty-printed and minified JSON."""
+        content = self._output_box.get("1.0", "end-1c").strip()
+        if not content:
+            return
+        try:
+            data = json.loads(content)
+        except json.JSONDecodeError:
+            return  # Not valid JSON — do nothing
+        if self._minify_var:
+            # Currently minified → pretty-print
+            self._set_output(json.dumps(data, indent=2, ensure_ascii=False))
+            self._format_toggle_btn.configure(text="Minify")
+            self._minify_var = False
+        else:
+            # Currently pretty → minify
+            self._set_output(json.dumps(data, separators=(",", ":"), ensure_ascii=False))
+            self._format_toggle_btn.configure(text="Pretty")
+            self._minify_var = True
 
     # -----------------------------------------------------------------------
     # Mode switching
     # -----------------------------------------------------------------------
 
+    # Attributes created by mode-specific build methods; cleaned up on switch.
+    _MODE_ATTRS_PARSE = (
+        "_parse_action_btn", "_parse_method", "_parse_input_area",
+        "_url_entry", "_file_path_var", "_batch_text",
+        "_pretty_var", "_max_items_var", "_ssl_var",
+    )
+    _MODE_ATTRS_CONSTRUCT = (
+        "_construct_action_btn", "_tmpl_path_var", "_tmpl_title_label",
+        "_construct_text", "_timestamp_var",
+    )
+
     def _clear_input_frame(self) -> None:
         for child in self._input_frame.winfo_children():
             child.destroy()
+        # Remove stale references so hasattr / winfo_exists checks stay correct
+        for attr in (*self._MODE_ATTRS_PARSE, *self._MODE_ATTRS_CONSTRUCT):
+            with contextlib.suppress(AttributeError):
+                delattr(self, attr)
 
     def _show_parse(self) -> None:
         self._clear_input_frame()
@@ -397,6 +604,17 @@ class ShruggieFeedToolsApp(ctk.CTk):
                 cfg["max_items"] = int(max_str)
         return cfg
 
+    def _capture_parse_input(self, method: str) -> dict[str, Any]:
+        """Read all widget values on the main thread (thread-safe)."""
+        captured: dict[str, Any] = {"method": method}
+        if method == "url":
+            captured["url"] = self._url_entry.get().strip()
+        elif method == "file":
+            captured["file"] = self._file_path_var.get().strip()
+        elif method == "batch":
+            captured["batch_raw"] = self._batch_text.get("1.0", "end").strip()
+        return captured
+
     def _run_parse(self) -> None:
         if self._busy:
             return
@@ -405,10 +623,12 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
         method = self._parse_method.get()
         opts = self._get_parse_config()
+        # Capture widget values on the main thread before spawning worker
+        captured = self._capture_parse_input(method)
 
         def task() -> None:
             try:
-                result = self._do_parse(method, opts)
+                result = self._do_parse(captured, opts)
                 output_text = json.dumps(
                     result, indent=2 if opts.get("pretty_print") else None, ensure_ascii=False
                 )
@@ -420,7 +640,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
         threading.Thread(target=task, daemon=True).start()
 
-    def _do_parse(self, method: str, opts: dict[str, Any]) -> Any:
+    def _do_parse(self, captured: dict[str, Any], opts: dict[str, Any]) -> Any:
         from shruggie_feedtools.core.config import ParserConfig
         from shruggie_feedtools.core.parser import parse_file as _pf
         from shruggie_feedtools.core.parser import parse_url as _pu
@@ -432,20 +652,22 @@ class ShruggieFeedToolsApp(ctk.CTk):
             pretty_print=opts.get("pretty_print", True),
         )
 
+        method = captured["method"]
+
         if method == "url":
-            url = self._url_entry.get().strip()
+            url = captured["url"]
             if not url:
                 return {"status": "error", "message": "No URL provided."}
             return _pu(url, config)
 
         elif method == "file":
-            fp = self._file_path_var.get().strip()
+            fp = captured["file"]
             if not fp:
                 return {"status": "error", "message": "No file selected."}
             return _pf(Path(fp), config)
 
         elif method == "batch":
-            raw = self._batch_text.get("1.0", "end").strip()
+            raw = captured["batch_raw"]
             urls = [
                 line.strip()
                 for line in raw.splitlines()
@@ -592,10 +814,18 @@ class ShruggieFeedToolsApp(ctk.CTk):
     # Threading helpers (§12.7)
     # -----------------------------------------------------------------------
 
+    @staticmethod
+    def _widget_alive(widget: Any) -> bool:
+        """Return True if a widget reference points to a live Tk widget."""
+        try:
+            return widget.winfo_exists()
+        except Exception:
+            return False
+
     def _set_busy(self, busy: bool) -> None:
         self._busy = busy
         state = "disabled" if busy else "normal"
-        # Disable/enable all action buttons
+        # Disable/enable only live action buttons
         for btn in self._find_action_buttons():
             btn.configure(state=state)
             if busy:
@@ -605,16 +835,16 @@ class ShruggieFeedToolsApp(ctk.CTk):
 
     def _find_action_buttons(self) -> list[ctk.CTkButton]:
         buttons: list[ctk.CTkButton] = []
-        if hasattr(self, "_parse_action_btn"):
-            buttons.append(self._parse_action_btn)
-        if hasattr(self, "_construct_action_btn"):
-            buttons.append(self._construct_action_btn)
+        for attr in ("_parse_action_btn", "_construct_action_btn"):
+            btn = getattr(self, attr, None)
+            if btn is not None and self._widget_alive(btn):
+                buttons.append(btn)
         return buttons
 
     def _restore_button_labels(self) -> None:
-        if hasattr(self, "_parse_action_btn"):
+        if hasattr(self, "_parse_action_btn") and self._widget_alive(self._parse_action_btn):
             self._parse_action_btn.configure(text="▶  Parse Feed")
-        if hasattr(self, "_construct_action_btn"):
+        if hasattr(self, "_construct_action_btn") and self._widget_alive(self._construct_action_btn):
             self._construct_action_btn.configure(text="▶  Construct Feed")
 
     def _finish_operation(self, output_text: str) -> None:

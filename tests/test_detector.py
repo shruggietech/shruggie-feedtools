@@ -47,3 +47,53 @@ class TestDetectFeedType:
 
     def test_detect_json_non_feed(self):
         assert detect_feed_type(b'{"name": "not a feed"}') is None
+
+    # -- Hardened JSON detection (bare version, missing _links) ---------------
+
+    def test_detect_json_feed_bare_version(self):
+        """JSON Feed with bare version string (non-compliant generators)."""
+        content = b'{"version": "1.1", "title": "My Feed", "items": []}'
+        assert detect_feed_type(content) == "json_feed"
+
+    def test_detect_json_feed_bare_version_10(self):
+        """JSON Feed with bare version '1.0'."""
+        content = b'{"version": "1.0", "title": "Old Feed", "items": []}'
+        assert detect_feed_type(content) == "json_feed"
+
+    def test_detect_json_feed_bare_version_no_items(self):
+        """Bare version without items key should NOT match."""
+        content = b'{"version": "1.1", "title": "Not enough"}'
+        assert detect_feed_type(content) is None
+
+    def test_detect_wp_rest_without_links(self):
+        """WP REST array without _links (CDN/cache stripped)."""
+        import json
+        data = [
+            {
+                "title": {"rendered": "Hello World"},
+                "slug": "hello-world",
+                "date_gmt": "2026-02-10T12:00:00",
+                "type": "post",
+                "status": "publish",
+                "guid": {"rendered": "https://example.com/?p=1"},
+            }
+        ]
+        assert detect_feed_type(json.dumps(data).encode()) == "wp_rest"
+
+    def test_detect_wp_rest_single_without_links(self):
+        """Single WP REST object without _links."""
+        import json
+        data = {
+            "title": {"rendered": "Hello World"},
+            "slug": "hello-world",
+            "date_gmt": "2026-02-10T12:00:00",
+            "type": "post",
+            "guid": {"rendered": "https://example.com/?p=1"},
+        }
+        assert detect_feed_type(json.dumps(data).encode()) == "wp_rest"
+
+    def test_detect_wp_rest_without_links_insufficient_markers(self):
+        """title.rendered alone without enough markers should NOT match."""
+        import json
+        data = [{"title": {"rendered": "Hello World"}, "foo": "bar"}]
+        assert detect_feed_type(json.dumps(data).encode()) is None
