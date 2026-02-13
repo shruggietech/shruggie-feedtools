@@ -190,8 +190,8 @@ class ShruggieFeedToolsApp(ctk.CTk):
                     self.iconbitmap(str(icon_path))
                     # Also set via wm_iconphoto for robust taskbar icon
                     if _HAS_PIL:
-                        pil_img = PILImage.open(str(icon_path))
-                        photo = ImageTk.PhotoImage(pil_img)
+                        pil_img = PILImage.open(str(icon_path))  # type: ignore[union-attr]
+                        photo = ImageTk.PhotoImage(pil_img)  # type: ignore[union-attr]
                         self.wm_iconphoto(True, photo)
                         # Keep a reference to prevent garbage collection
                         self._icon_photo = photo  # type: ignore[attr-defined]
