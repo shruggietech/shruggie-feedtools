@@ -2,9 +2,8 @@
 
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
-[![PyPI](https://img.shields.io/pypi/v/shruggie-feedtools.svg)](https://pypi.org/project/shruggie-feedtools/)
 
-Python module that normalizes web feed data from diverse sources — RSS, Atom, JSON Feed, WordPress REST API, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. Ships as an importable Python package, a CLI tool, and a standalone Windows GUI application.
+Python module that normalizes web feed data from diverse sources — RSS, Atom, JSON Feed, WordPress REST API, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. Ships as a CLI tool and a standalone Windows GUI application, distributed as pre-built executables via GitHub Releases.
 
 ---
 
@@ -22,30 +21,39 @@ Take raw text content, a timestamp, and a template file, and produce schema-comp
 
 ## Installation
 
-### From PyPI
+### Download (recommended)
 
-```bash
-pip install shruggie-feedtools
-```
+Grab the latest `.exe` from the [GitHub Releases](https://github.com/shruggietech/shruggie-feedtools/releases) page:
 
-### With GUI support
+| Artifact | Description |
+|----------|-------------|
+| `shruggie-feedtools-cli-{version}-win-x64.exe` | Standalone CLI executable (Windows x64) |
+| `shruggie-feedtools-gui-{version}-win-x64.exe` | Standalone GUI executable (Windows x64, includes CLI) |
 
-```bash
-pip install shruggie-feedtools[gui]
-```
+> **Windows users:** After downloading, you may need to right-click the `.exe` → **Properties** → check **"Unblock"** → **OK** before Windows will let you run it. This is normal for executables downloaded from the internet.
 
-### Development install
+Place the `.exe` anywhere on your system and run it directly — no Python installation required.
+
+### Development setup (contributors only)
 
 ```bash
 git clone https://github.com/shruggietech/shruggie-feedtools.git
 cd shruggie-feedtools
-python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
-# source .venv/bin/activate
-pip install -e ".[dev,gui]"
 ```
+
+**Windows (PowerShell):**
+
+```powershell
+./scripts/venv-setup.ps1
+```
+
+**Linux/macOS:**
+
+```bash
+./scripts/venv-setup.sh
+```
+
+This creates a `.venv`, installs all dependencies, and sets up the project for local development.
 
 ---
 
@@ -293,12 +301,6 @@ pytest tests/ -v
 ```
 
 This produces CLI and GUI `.exe` files in `dist/release/`.
-
-### Building the Python package
-
-```bash
-python -m build
-```
 
 ---
 

@@ -2,7 +2,6 @@
 
 **Project:** `shruggie-feedtools`
 **Repository:** [shruggietech/shruggie-feedtools](https://github.com/shruggietech/shruggie-feedtools)
-**PyPI Package:** `shruggie-feedtools`
 **License:** Apache 2.0 ([full text](https://www.apache.org/licenses/LICENSE-2.0))
 **Version:** 0.1.0 (MVP)
 **Author:** William Thompson / ShruggieTech LLC
@@ -13,7 +12,7 @@
 
 ## 1. Executive Summary
 
-`shruggie-feedtools` is a Python module that normalizes web feed data from diverse sources — RSS, Atom, JSON Feed, WordPress REST API, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. It ships as an importable Python package, a CLI tool, and a standalone Windows GUI application. Both CLI and GUI executables are assembled and released together as separate downloads on GitHub. The module is designed from the ground up for eventual integration as a backend for an HTTP API service.
+`shruggie-feedtools` is a Python module that normalizes web feed data from diverse sources — RSS, Atom, JSON Feed, WordPress REST API, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. It ships as a CLI tool and a standalone Windows GUI application, distributed as pre-built executables via GitHub Releases. The module is designed from the ground up for eventual integration as a backend for an HTTP API service.
 
 ### 1.1 Branding Context
 
@@ -21,7 +20,6 @@
 
 | Surface | Value |
 |---------|-------|
-| PyPI package | `shruggie-feedtools` |
 | Import name | `shruggie_feedtools` |
 | CLI command | `shruggie-feedtools` |
 | GitHub repo | `shruggietech/shruggie-feedtools` |
@@ -1107,7 +1105,6 @@ Detection: JSON object with `version` containing `jsonfeed.org`.
 | `pytest` | Testing |
 | `pytest-cov` | Coverage |
 | `ruff` | Linting + formatting |
-| `build` | Python package building (sdist + wheel) |
 
 ---
 
@@ -1209,15 +1206,16 @@ All parse and construct operations run in a background thread to keep the UI res
 
 ### 13.1 Release Artifacts
 
-Every release publishes three artifacts:
+Every release publishes two artifacts:
 
 | Artifact | Filename | Contents |
 |----------|----------|----------|
 | CLI executable | `shruggie-feedtools-cli-{version}-win-x64.exe` | PyInstaller single-file `.exe`. CLI only. No GUI deps. ~20–35 MB. |
 | GUI executable | `shruggie-feedtools-gui-{version}-win-x64.exe` | PyInstaller single-file `.exe`. Full GUI + CLI. Includes CustomTkinter. ~40–65 MB. |
-| Python package | `shruggie_feedtools-{version}.tar.gz` + `.whl` | sdist and wheel for `pip install`. Cross-platform. |
 
-The CLI and GUI executables target Windows 10/11 x64. The Python package works on any platform with Python >=3.12.
+The CLI and GUI executables target Windows 10/11 x64.
+
+> **Windows users:** After downloading a `.exe` from GitHub Releases, you may need to right-click → **Properties** → check **"Unblock"** → **OK** before Windows will let you run it.
 
 ### 13.2 GitHub Actions Workflow
 
@@ -1270,22 +1268,6 @@ jobs:
         run: |
           ./scripts/venv-setup.ps1
           ./scripts/build.ps1 -Release
-
-      - name: Build Python package
-        if: steps.check_assets.outputs.prebuilt == 'false'
-        shell: pwsh
-        run: |
-          .venv/Scripts/python -m build
-
-      - name: Collect Python package artifacts
-        shell: pwsh
-        run: |
-          if (Test-Path "dist/*.tar.gz") {
-            Copy-Item dist/*.tar.gz dist/release/ -ErrorAction SilentlyContinue
-          }
-          if (Test-Path "dist/*.whl") {
-            Copy-Item dist/*.whl dist/release/ -ErrorAction SilentlyContinue
-          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -2316,7 +2298,6 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
     "pyinstaller>=6.0",
-    "build>=1.0",
 ]
 ```
 
@@ -2324,9 +2305,9 @@ Install combinations:
 
 | Command | What it installs |
 |---------|-----------------|
-| `pip install shruggie-feedtools` | Core runtime only (feedparser, httpx, pydantic, python-dateutil) |
-| `pip install shruggie-feedtools[gui]` | Core + CustomTkinter |
-| `pip install -e ".[dev,gui]"` | Editable install with all dependencies (used by `venv-setup` scripts) |
+| `pip install -e ".[dev,gui]"` | Editable install with all dependencies (used by `venv-setup` scripts during development) |
+
+> **Note:** This project is not published to PyPI. End users should download pre-built executables from [GitHub Releases](https://github.com/shruggietech/shruggie-feedtools/releases). The `pip install -e` command above is for contributors setting up a local development environment only.
 
 ### A.4 Code Style and Linting
 

@@ -37,7 +37,6 @@ dev = [
     "pytest-cov>=5.0",
     "ruff>=0.4",
     "pyinstaller>=6.0",
-    "build>=1.0",
 ]
 
 [project.scripts]

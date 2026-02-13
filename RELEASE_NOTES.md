@@ -56,25 +56,27 @@ Targeted reliability release resolving two persistent issues from v0.1.4: WordPr
 |---|---|
 | `shruggie-feedtools-cli-0.1.5-win-x64.exe` | Standalone Windows CLI executable |
 | `shruggie-feedtools-gui-0.1.5-win-x64.exe` | Standalone Windows GUI executable |
-| `shruggie_feedtools-0.1.5.tar.gz` | Source distribution |
-| `shruggie_feedtools-0.1.5-py3-none-any.whl` | Python wheel |
+
+Download from [GitHub Releases](https://github.com/shruggietech/shruggie-feedtools/releases).
+
+> **Windows users:** After downloading, you may need to right-click the `.exe` → **Properties** → check **"Unblock"** → **OK** before Windows will let you run it.
 
 ---
 
 ## Upgrade Notes
 
 - Drop-in replacement for v0.1.4 — no schema changes, no API changes
+- Download the latest `.exe` from [GitHub Releases](https://github.com/shruggietech/shruggie-feedtools/releases) — no pip install required
 - WP REST API root/index URLs that previously failed will now auto-discover and parse posts
 - GUI favicon should now persist reliably on Windows
 - HTTP requests now correctly identify as `shruggie-feedtools/0.1.5`
-- pip users: `pip install --upgrade shruggie-feedtools[gui]`
 
 ---
 
 ## Requirements
 
-- Python 3.12 or later (for library/CLI usage via pip)
-- Windows 10/11 x64 (for standalone executables)
+- Windows 10/11 x64 (for standalone executables — no Python needed)
+- Python 3.12 or later (for development/contributor use only)
 
 ### Runtime Dependencies
 
@@ -83,17 +85,16 @@ Targeted reliability release resolving two persistent issues from v0.1.4: WordPr
 - `pydantic >= 2.0`
 - `python-dateutil >= 2.9`
 
-### Optional
+### Optional (development only)
 
-- `customtkinter >= 5.2` (for GUI: `pip install shruggie-feedtools[gui]`)
-- `pygments >= 2.17` (for GUI syntax highlighting; included in `[gui]` extras)
-- `Pillow >= 10.0` (for robust favicon display; included in `[gui]` extras)
+- `customtkinter >= 5.2` (for GUI)
+- `pygments >= 2.17` (for GUI syntax highlighting)
+- `Pillow >= 10.0` (for robust favicon display)
 
 ---
 
 ## Known Limitations
 
-- PyPI publishing is not yet configured; install from source or use the standalone executables
 - GUI executable is Windows-only in this release
 - No CI test gate prior to release — tests are run locally (317/317 passing)
 

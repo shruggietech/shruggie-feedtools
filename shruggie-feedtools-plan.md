@@ -74,7 +74,7 @@ This sprint creates the entire project skeleton and implements the foundational 
 ### Verification
 
 ```bash
-# From project root after pip install -e ".[dev]"
+# From project root after running ./scripts/venv-setup.ps1 (or .sh)
 pytest tests/test_schema.py tests/test_dates.py tests/test_namespaces.py -v
 ```
 
@@ -314,7 +314,7 @@ This sprint wires up the user-facing CLI with argparse subcommands and implement
 
 **Development scripts (all under `scripts/`):**
 
-- `venv-setup.ps1` — PowerShell: locate project root, check/create `.venv`, verify Python ≥3.12, `pip install -e ".[dev,gui]"`, parameterized `-PythonCmd` and `-Force`
+- `venv-setup.ps1` — PowerShell: locate project root, check/create `.venv`, verify Python ≥3.12, install editable dev+gui extras, parameterized `-PythonCmd` and `-Force`
 - `venv-setup.sh` — Bash: mirror of PS1 with `--python` and `--force` flags, searches for `python3.12`/`python3`/`python`
 - `build.ps1` — PowerShell: call venv-setup, read version from `_version.py`, PyInstaller CLI and/or GUI targets, `-Target` (cli/gui/all), `-Release` (copy to `dist/release/` with versioned filenames), `-Clean`
 - `build.sh` — Bash mirror of build.ps1
@@ -392,15 +392,16 @@ This sprint builds the GUI application, sets up the GitHub Actions release pipel
 
 **Release infrastructure:**
 
-- `.github/workflows/release.yml` — Exactly as specified in §13.2: triggered on `v*` tag push, `windows-latest` runner, pre-built asset bypass check, Python 3.12 setup, build from source fallback, Python package building, `softprops/action-gh-release@v2` with `dist/release/*`
+- `.github/workflows/release.yml` — Exactly as specified in §13.2: triggered on `v*` tag push, `windows-latest` runner, pre-built asset bypass check, Python 3.12 setup, build from source fallback, `softprops/action-gh-release@v2` with `dist/release/*`
 - `dist/release/` directory — Create with `.gitkeep`
 
 **README.md:**
 
-- Project title, badges (license, Python version, PyPI)
+- Project title, badges (license, Python version)
 - Overview paragraph from §1 Executive Summary
 - Core capabilities (Parse mode + Construct mode)
-- Installation (`pip install shruggie-feedtools`, `[gui]` extra, development install)
+- Installation (download pre-built executables from GitHub Releases, with Windows "Unblock" instructions)
+- Development setup (clone + venv-setup scripts for contributors)
 - Quick start examples: parse URL, parse file, construct single item, construct batch
 - CLI reference: parse subcommand flags, construct subcommand flags, global options
 - Python API reference: key function signatures with brief descriptions
