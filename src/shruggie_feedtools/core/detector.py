@@ -209,6 +209,31 @@ def _detect_json_type(content: bytes) -> str | None:
                 )
                 return "wp_rest"
 
+    # WP REST API namespace index — e.g. /wp-json/wp/v2
+    # Returns {"namespace": "wp/v2", "routes": {...}, "_links": {...}}
+    if isinstance(data, dict):
+        if "namespace" in data and "routes" in data:
+            logger.debug(
+                "WP REST API namespace index detected (namespace=%s)",
+                data.get("namespace"),
+            )
+            return "wp_rest_index"
+
+    # WP REST site root — e.g. /wp-json/
+    # Returns {"name": "...", "namespaces": [...], "url": "...", ...}
+    if isinstance(data, dict):
+        if "namespaces" in data and ("url" in data or "name" in data):
+            namespaces = data.get("namespaces", [])
+            if isinstance(namespaces, list) and any(
+                isinstance(ns, str) and ns.startswith("wp/")
+                for ns in namespaces
+            ):
+                logger.debug(
+                    "WP REST site root detected (namespaces=%s)",
+                    namespaces[:5],
+                )
+                return "wp_rest_index"
+
     # Log unrecognized JSON for diagnostics
     if isinstance(data, dict):
         logger.debug(
@@ -241,6 +266,36 @@ def _has_wp_rest_markers(obj: dict[str, Any]) -> bool:
     if isinstance(guid, dict) and "rendered" in guid:
         return True
     return hits >= 3
+
+
+def derive_wp_rest_posts_url(url: str) -> str | None:
+    """Derive the WP REST posts endpoint from a WP REST index/root URL.
+
+    Recognizes patterns like:
+    - ``https://example.com/wp-json/wp/v2``  →  ``…/wp/v2/posts?_embed``
+    - ``https://example.com/wp-json/wp/v2/``  →  ``…/wp/v2/posts?_embed``
+    - ``https://example.com/wp-json/``  →  ``…/wp-json/wp/v2/posts?_embed``
+    - ``https://example.com/wp-json``  →  ``…/wp-json/wp/v2/posts?_embed``
+
+    Returns:
+        The posts endpoint URL, or ``None`` if the URL doesn't look like
+        a WP REST root.
+    """
+    import re
+
+    stripped = url.rstrip("/")
+
+    # Pattern 1: ends with /wp-json/wp/v2  (namespace index)
+    match = re.match(r"^(.*?/wp-json/wp/v\d+)$", stripped, re.IGNORECASE)
+    if match:
+        return match.group(1) + "/posts?_embed"
+
+    # Pattern 2: ends with /wp-json  (site root)
+    match = re.match(r"^(.*?/wp-json)$", stripped, re.IGNORECASE)
+    if match:
+        return match.group(1) + "/wp/v2/posts?_embed"
+
+    return None
 
 
 def _detect_xml_type(content: bytes) -> str | None:

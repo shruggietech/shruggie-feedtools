@@ -177,11 +177,9 @@ class ShruggieFeedToolsApp(ctk.CTk):
         self._show_parse()
 
         # Defer icon application so CustomTkinter finishes its own init first.
-        # CTk aggressively re-sets the window icon during startup, so we apply
-        # the icon multiple times at increasing delays to win the race.
+        # CTk aggressively re-sets the window icon during startup, so we
+        # apply the icon once the window is mapped, then lock iconbitmap.
         self.after(100, self._apply_icon)
-        self.after(500, self._apply_icon)
-        self.after(1200, self._apply_icon)
         self.after_idle(self._apply_icon)
 
         logger.debug("GUI application initialized (version %s)", __version__)
@@ -190,13 +188,8 @@ class ShruggieFeedToolsApp(ctk.CTk):
     # Branding — favicon
     # -----------------------------------------------------------------------
 
-    def _apply_icon(self) -> None:
-        """Set the window icon from brand/favicon.ico (and .png fallback).
-
-        Called multiple times at increasing delays to override CustomTkinter's
-        aggressive default-icon behaviour.  Each call is idempotent.
-        """
-        # Build candidate base directories (order matters — first hit wins)
+    def _find_icon_paths(self) -> tuple[Path | None, Path | None]:
+        """Search candidate directories for favicon.ico / favicon.png."""
         base_dirs: list[Path] = []
         if hasattr(sys, "_MEIPASS"):
             base_dirs.append(Path(sys._MEIPASS))  # type: ignore[attr-defined]
@@ -222,18 +215,33 @@ class ShruggieFeedToolsApp(ctk.CTk):
         if ico_path is None and png_path is None:
             searched = [str(b / "brand") for b in base_dirs]
             logger.debug("No favicon found; searched: %s", searched)
+        return ico_path, png_path
+
+    def _apply_icon(self) -> None:
+        """Set the window icon using the most reliable method per platform.
+
+        On Windows, uses the Win32 API (SendMessageW / WM_SETICON) to bypass
+        CustomTkinter's aggressive icon overrides.  Falls back to standard
+        tkinter methods on other platforms.  After applying, monkey-patches
+        ``iconbitmap`` so CTk can no longer overwrite it.
+        """
+        if getattr(self, "_icon_locked", False):
+            return  # already applied and locked
+
+        ico_path, png_path = self._find_icon_paths()
+        if ico_path is None and png_path is None:
             return
 
         logger.debug("Loading icon from: ico=%s, png=%s", ico_path, png_path)
 
-        # 1. Set title-bar icon via .ico
+        # --- Standard tkinter iconbitmap (title bar on all platforms) ---
         if ico_path is not None:
             try:
                 self.iconbitmap(str(ico_path))
             except Exception as exc:
                 logger.debug("iconbitmap failed: %s", exc)
 
-        # 2. Set taskbar icon via wm_iconphoto (PIL → ICO, else PNG fallback)
+        # --- wm_iconphoto (cross-platform taskbar icon) ---
         try:
             if _HAS_PIL and ico_path is not None:
                 pil_img = PILImage.open(str(ico_path))  # type: ignore[union-attr]
@@ -247,17 +255,68 @@ class ShruggieFeedToolsApp(ctk.CTk):
         except Exception as exc:
             logger.debug("wm_iconphoto failed: %s", exc)
 
-        # 3. Re-apply iconbitmap to override CTk default icon
-        if ico_path is not None:
-            _ico = str(ico_path)
-            self.after(200, lambda: self._safe_iconbitmap(_ico))
+        # --- Win32 API: definitive icon override on Windows ---
+        if sys.platform == "win32" and ico_path is not None:
+            self._apply_icon_win32(str(ico_path))
 
-    def _safe_iconbitmap(self, path: str) -> None:
-        """Re-apply iconbitmap; swallow errors if window is closing."""
-        try:
-            self.iconbitmap(path)
-        except Exception:
+        # --- Lock iconbitmap to prevent CTk from overriding our icon ---
+        self._icon_locked = True
+        original_iconbitmap = self.iconbitmap.__func__ if hasattr(self.iconbitmap, "__func__") else None  # type: ignore[union-attr]
+
+        def _locked_iconbitmap(bitmap: str = "", default: str = "") -> None:
+            """No-op replacement to prevent CTk from resetting the icon."""
             pass
+
+        self.iconbitmap = _locked_iconbitmap  # type: ignore[assignment]
+        logger.debug("Icon applied and locked against CTk overrides")
+
+    def _apply_icon_win32(self, ico_path: str) -> None:
+        """Use Win32 SendMessageW + LoadImageW to set the icon at the OS level.
+
+        This completely bypasses tkinter/CTk and is immune to any Python-level
+        icon overrides.  Sets both the title-bar (ICON_SMALL / 16×16) and
+        taskbar (ICON_BIG / 32×32) icons.
+        """
+        try:
+            import ctypes
+            from ctypes import wintypes
+
+            user32 = ctypes.windll.user32  # type: ignore[attr-defined]
+
+            IMAGE_ICON = 1
+            LR_LOADFROMFILE = 0x0010
+
+            WM_SETICON = 0x0080
+            ICON_SMALL = 0
+            ICON_BIG = 1
+
+            # The Tk widget ID gives the inner frame; GetParent gives the
+            # actual top-level HWND that the window manager sees.
+            inner_hwnd = self.winfo_id()
+            hwnd = user32.GetParent(inner_hwnd) or inner_hwnd
+
+            hicon_big = user32.LoadImageW(
+                0, ico_path, IMAGE_ICON, 32, 32, LR_LOADFROMFILE,
+            )
+            hicon_small = user32.LoadImageW(
+                0, ico_path, IMAGE_ICON, 16, 16, LR_LOADFROMFILE,
+            )
+
+            if hicon_big:
+                user32.SendMessageW(hwnd, WM_SETICON, ICON_BIG, hicon_big)
+            if hicon_small:
+                user32.SendMessageW(hwnd, WM_SETICON, ICON_SMALL, hicon_small)
+
+            # Keep handles alive for the lifetime of the process
+            self._win32_hicon_big = hicon_big
+            self._win32_hicon_small = hicon_small
+
+            logger.debug(
+                "Win32 icon applied (hwnd=0x%X, big=0x%X, small=0x%X)",
+                hwnd, hicon_big or 0, hicon_small or 0,
+            )
+        except Exception as exc:
+            logger.debug("Win32 icon failed: %s", exc)
 
     # -----------------------------------------------------------------------
     # Sidebar

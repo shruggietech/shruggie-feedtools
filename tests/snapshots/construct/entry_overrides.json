@@ -7,7 +7,7 @@
     ],
     "description": "Automated incident reports from monitoring",
     "extensions": {},
-    "generator": "shruggie-feedtools/0.1.3",
+    "generator": "shruggie-feedtools/0.1.4",
     "image": "https://status.example.com/logo.png",
     "language": "en-us",
     "last_updated": "2026-02-10T09:15:00Z",

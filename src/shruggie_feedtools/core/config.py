@@ -5,7 +5,13 @@ Passed explicitly to parse functions — no global state.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+from shruggie_feedtools._version import __version__
+
+
+def _default_user_agent() -> str:
+    return f"shruggie-feedtools/{__version__}"
 
 
 @dataclass
@@ -20,7 +26,7 @@ class ParserConfig:
     timeout_connect: float = 10.0
     timeout_read: float = 30.0
     max_response_bytes: int = 10 * 1024 * 1024  # 10 MB
-    user_agent: str = "shruggie-feedtools/0.1.1"
+    user_agent: str = field(default_factory=_default_user_agent)
     verify_ssl: bool = True
     max_redirects: int = 5
     retries: int = 2

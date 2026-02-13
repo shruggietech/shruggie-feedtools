@@ -16,7 +16,7 @@ from shruggie_feedtools.adapters.feedparser_adapter import parse_feed as _feedpa
 from shruggie_feedtools.adapters.json_feed_adapter import parse_json_feed as _json_feed_parse
 from shruggie_feedtools.adapters.wp_rest_adapter import parse_wp_rest as _wp_rest_parse
 from shruggie_feedtools.core.config import ParserConfig
-from shruggie_feedtools.core.detector import detect_feed_type
+from shruggie_feedtools.core.detector import derive_wp_rest_posts_url, detect_feed_type
 from shruggie_feedtools.core.fetcher import fetch
 from shruggie_feedtools.core.normalizer import normalize_feed, normalize_item
 from shruggie_feedtools.core.schema import (
@@ -238,6 +238,23 @@ def parse_url(
 
     # Detect format — pass content-type header as a fallback hint
     feed_type = detect_feed_type(raw, content_type=result.content_type)
+
+    # WP REST API index/root: auto-discover the posts endpoint
+    if feed_type == "wp_rest_index":
+        posts_url = derive_wp_rest_posts_url(final_url)
+        if posts_url is None:
+            # Fallback: try deriving from the original URL too
+            posts_url = derive_wp_rest_posts_url(url)
+        if posts_url is not None:
+            logger.debug(
+                "WP REST index detected at %s — auto-discovering posts at %s",
+                final_url,
+                posts_url,
+            )
+            return parse_url(posts_url, config)
+        # If we still can't derive a posts URL, fall through to error
+        feed_type = None
+
     if feed_type is None:
         first_byte = raw.lstrip()[0:1] if raw.strip() else b""
         ct = result.content_type or "unknown"

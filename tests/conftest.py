@@ -4,12 +4,23 @@ from __future__ import annotations
 
 import difflib
 import json
+import re
 from pathlib import Path
 
 import pytest
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 SNAPSHOT_DIR = Path(__file__).parent / "snapshots"
+
+# Pattern matching our own generator version string so snapshot comparisons
+# survive version bumps without manual regeneration.
+_GENERATOR_VERSION_RE = re.compile(r"shruggie-feedtools/\d+\.\d+\.\d+[^\"\n]*")
+_GENERATOR_PLACEHOLDER = "shruggie-feedtools/VERSION"
+
+
+def _normalize_version(text: str) -> str:
+    """Replace the app's own generator version string with a stable placeholder."""
+    return _GENERATOR_VERSION_RE.sub(_GENERATOR_PLACEHOLDER, text)
 
 
 def pytest_addoption(parser: pytest.Parser) -> None:
@@ -51,10 +62,13 @@ def assert_snapshot(request: pytest.FixtureRequest):
             )
 
         expected = snapshot_path.read_text(encoding="utf-8")
-        if serialized != expected:
+        # Normalize our own generator version so bumps don't cause false failures
+        norm_expected = _normalize_version(expected)
+        norm_actual = _normalize_version(serialized)
+        if norm_actual != norm_expected:
             diff = difflib.unified_diff(
-                expected.splitlines(keepends=True),
-                serialized.splitlines(keepends=True),
+                norm_expected.splitlines(keepends=True),
+                norm_actual.splitlines(keepends=True),
                 fromfile=f"snapshot/{name}.json",
                 tofile="actual output",
             )

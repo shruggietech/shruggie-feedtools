@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from shruggie_feedtools.core.detector import detect_feed_type
+from shruggie_feedtools.core.detector import derive_wp_rest_posts_url, detect_feed_type
 
 
 class TestDetectFeedType:
@@ -131,3 +131,69 @@ class TestDetectFeedType:
         """Passing content_type=None doesn't break existing detection."""
         content = load_fixture("json_feed/v1_standard.json")
         assert detect_feed_type(content, content_type=None) == "json_feed"
+
+    # -- WP REST API root / namespace index detection -------------------------
+
+    def test_detect_wp_rest_namespace_index(self):
+        """WP REST namespace index (/wp-json/wp/v2) with namespace + routes."""
+        import json
+        data = {
+            "namespace": "wp/v2",
+            "routes": {
+                "/wp/v2": {"namespace": "wp/v2", "methods": ["GET"]},
+                "/wp/v2/posts": {"namespace": "wp/v2", "methods": ["GET", "POST"]},
+            },
+            "_links": {
+                "self": [{"href": "https://example.com/wp-json/wp/v2"}],
+            },
+        }
+        assert detect_feed_type(json.dumps(data).encode()) == "wp_rest_index"
+
+    def test_detect_wp_rest_site_root(self):
+        """WP REST site root (/wp-json/) with namespaces array."""
+        import json
+        data = {
+            "name": "My Site",
+            "description": "A WordPress site",
+            "url": "https://example.com",
+            "namespaces": ["oembed/1.0", "wp/v2", "wp-site-health/v1"],
+        }
+        assert detect_feed_type(json.dumps(data).encode()) == "wp_rest_index"
+
+    def test_detect_wp_rest_site_root_no_wp_namespace(self):
+        """Site root with namespaces but no wp/* entries should NOT match."""
+        import json
+        data = {
+            "name": "Some API",
+            "url": "https://example.com",
+            "namespaces": ["custom/v1", "other/v2"],
+        }
+        assert detect_feed_type(json.dumps(data).encode()) is None
+
+
+class TestDeriveWpRestPostsUrl:
+    """Tests for derive_wp_rest_posts_url URL derivation."""
+
+    def test_namespace_index_url(self):
+        url = "https://example.com/wp-json/wp/v2"
+        assert derive_wp_rest_posts_url(url) == "https://example.com/wp-json/wp/v2/posts?_embed"
+
+    def test_namespace_index_url_trailing_slash(self):
+        url = "https://example.com/wp-json/wp/v2/"
+        assert derive_wp_rest_posts_url(url) == "https://example.com/wp-json/wp/v2/posts?_embed"
+
+    def test_site_root_url(self):
+        url = "https://example.com/wp-json/"
+        assert derive_wp_rest_posts_url(url) == "https://example.com/wp-json/wp/v2/posts?_embed"
+
+    def test_site_root_url_no_trailing_slash(self):
+        url = "https://example.com/wp-json"
+        assert derive_wp_rest_posts_url(url) == "https://example.com/wp-json/wp/v2/posts?_embed"
+
+    def test_subdir_wp_install(self):
+        url = "https://example.com/blog/wp-json/wp/v2"
+        assert derive_wp_rest_posts_url(url) == "https://example.com/blog/wp-json/wp/v2/posts?_embed"
+
+    def test_non_wp_url_returns_none(self):
+        url = "https://example.com/api/v1"
+        assert derive_wp_rest_posts_url(url) is None

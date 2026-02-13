@@ -1,4 +1,4 @@
-# Release Notes — shruggie-feedtools v0.1.4
+# Release Notes — shruggie-feedtools v0.1.5
 
 **Release Date:** 2026-02-13
 **Status:** Patch release (Alpha)
@@ -7,47 +7,46 @@
 
 ## Overview
 
-Critical parsing and usability release fixing three persistent issues: JSON Feed and WordPress REST API detection failures across both CLI and GUI, unreliable GUI favicon display, and inadequate CLI help text. Adds content-type and BOM-aware feed detection, a comprehensive CLI help overhaul, and 15 new tests (317 total passing).
+Targeted reliability release resolving two persistent issues from v0.1.4: WordPress REST API index URLs failing to parse, and GUI favicons not surviving CustomTkinter's startup icon overrides. Also fixes a stale hardcoded user-agent string and eliminates recurring snapshot maintenance caused by version bumps.
 
 ---
 
 ## Bug Fixes
 
-### JSON Feed / WP REST Detection Failures
+### WordPress REST API Index URL Auto-Discovery
 
-- **Fixed: JSON Parse operations failing with "Response does not match any known feed format"** — The feed type detector now accepts an optional `content_type` parameter used as a fallback when byte-level sniffing is inconclusive. `parse_url()` passes the HTTP `Content-Type` header through to the detector, and `parse_file()` uses file extension (`.json`) as a detection hint.
-- **Fixed: BOM-encoded feeds rejected** — Added BOM detection and re-encoding for UTF-8, UTF-16 LE/BE, and UTF-32 LE/BE byte order marks. Content is normalized to UTF-8 before detection and parsing.
-- **Improved: Diagnostic error messages** — All error responses now include diagnostic context (`first_byte`, `content_type`, `filename`) to aid troubleshooting.
+- **Fixed: "Parse" failing for WP REST root URLs** — Entering URLs like `https://example.com/wp-json/wp/v2` or `https://example.com/wp-json/` previously returned "Response does not match any known feed format" because those endpoints return API index/discovery JSON, not post data. The detector now recognizes these responses as `wp_rest_index` and the parser auto-discovers the correct `/posts?_embed` endpoint, transparently re-fetching and parsing the actual posts.
+- **Supports two WP REST index patterns:**
+  - Namespace index (`/wp-json/wp/v2`) — identified by `namespace` + `routes` keys
+  - Site root (`/wp-json/`) — identified by `namespaces` array containing `wp/*` entries
+- **New helper:** `derive_wp_rest_posts_url()` maps index URLs to their posts endpoint
 
-### GUI Favicon Not Applying
+### GUI Favicon — Win32 API Override
 
-- **Fixed: Favicon still not appearing after previous attempts** — Comprehensive timing overhaul:
-  - Icon now applied at four staggered delays (100ms, 500ms, 1200ms, and `after_idle`) to reliably override CustomTkinter's aggressive default-icon behavior
-  - Added `parents[2]` as a candidate base directory for editable-install layouts
-  - Reduced per-call re-apply delay from 300ms to 200ms
-  - Logs all searched paths when no favicon is found for easier debugging
-- **Fixed: PyInstaller build missing favicon** — Added `('brand', 'brand')` to the GUI `.spec` file's `datas` list so `favicon.ico` and `favicon.png` are bundled in the executable. Added `icon='brand/favicon.ico'` to the `EXE()` call so the `.exe` itself displays the correct icon in Windows Explorer and the taskbar.
+- **Fixed: Favicons still not appearing after 3+ prior attempts** — Replaced the unreliable multi-timer race (4 staggered `after()` calls) with a definitive approach:
+  - On Windows, uses Win32 API (`LoadImageW` + `SendMessageW` with `WM_SETICON`) via ctypes to set both ICON_SMALL (16×16) and ICON_BIG (32×32) at the OS/window-manager level, completely bypassing tkinter
+  - After applying, monkey-patches `iconbitmap` to a no-op so CustomTkinter can never override the icon again
+  - Falls back to standard tkinter `iconbitmap` + `wm_iconphoto` on non-Windows platforms
 
-### CLI Help Text Overhaul
+### Hardcoded User-Agent Fixed
 
-- **Fixed: Terse, incomplete CLI help** — Complete rebuild of the argument parser:
-  - All parsers now use `RawDescriptionHelpFormatter` for proper multi-line rendering
-  - Arguments organized into logical groups: **input modes**, **output options**, **behavior options** (parse); **template**, **input modes**, **timestamp**, **output options** (construct)
-  - Descriptive metavars added: `URL`, `FILE`, `DIRECTORY`, `SECONDS`, `STRING`, `N`, `DIR`
-  - Rich multi-line descriptions listing all supported feed formats
-  - Practical usage examples in epilogs for all subcommands
-  - Exit code documentation (0 = success, 1 = partial failure, 2 = argument/template error)
+- **Fixed: HTTP User-Agent reporting `shruggie-feedtools/0.1.1` regardless of actual version** — `ParserConfig.user_agent` now uses a `field(default_factory=...)` that reads `__version__` at runtime instead of a hardcoded string. The user-agent will always match the installed version going forward.
 
 ---
 
-## New Tests
+## Test Infrastructure
+
+### Version-Resilient Snapshots
+
+- **Fixed: Snapshot tests breaking on every version bump** — The `assert_snapshot` fixture in `conftest.py` now normalizes `shruggie-feedtools/X.Y.Z` to a stable placeholder before comparing, so construct snapshots no longer fail when `_version.py` is bumped. Supports semver and pre-release suffixes.
+
+### New Tests
 
 | Area | Tests Added | Description |
 |---|---|---|
-| `test_detector.py` | 7 | Content-type fallback hints, UTF-8/16 BOM handling, backward compatibility |
-| `test_parser.py` | 3 | JSON Feed via `parse_url()` (mocked), `parse_file()` pipeline |
-| `test_cli.py` | 5 | JSON Feed CLI file/URL parsing, enriched help text assertions |
-| **Total** | **15 new** | **317 total tests passing** |
+| `test_detector.py` | 3 | WP REST namespace index, site root, and negative case |
+| `test_detector.py` | 6 | `derive_wp_rest_posts_url()` URL derivation (namespace, root, subdir, negative) |
+| **Total** | **9 new** | **326 total tests passing** |
 
 ---
 
@@ -55,18 +54,19 @@ Critical parsing and usability release fixing three persistent issues: JSON Feed
 
 | Artifact | Description |
 |---|---|
-| `shruggie-feedtools-cli-0.1.4-win-x64.exe` | Standalone Windows CLI executable |
-| `shruggie-feedtools-gui-0.1.4-win-x64.exe` | Standalone Windows GUI executable |
-| `shruggie_feedtools-0.1.4.tar.gz` | Source distribution |
-| `shruggie_feedtools-0.1.4-py3-none-any.whl` | Python wheel |
+| `shruggie-feedtools-cli-0.1.5-win-x64.exe` | Standalone Windows CLI executable |
+| `shruggie-feedtools-gui-0.1.5-win-x64.exe` | Standalone Windows GUI executable |
+| `shruggie_feedtools-0.1.5.tar.gz` | Source distribution |
+| `shruggie_feedtools-0.1.5-py3-none-any.whl` | Python wheel |
 
 ---
 
 ## Upgrade Notes
 
-- Drop-in replacement for v0.1.3 — no schema changes, no API changes
-- JSON Feed and WP REST parsing that previously failed should now succeed out of the box
-- GUI users: download the new `.exe` and replace the old one
+- Drop-in replacement for v0.1.4 — no schema changes, no API changes
+- WP REST API root/index URLs that previously failed will now auto-discover and parse posts
+- GUI favicon should now persist reliably on Windows
+- HTTP requests now correctly identify as `shruggie-feedtools/0.1.5`
 - pip users: `pip install --upgrade shruggie-feedtools[gui]`
 
 ---
