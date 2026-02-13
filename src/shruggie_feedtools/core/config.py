@@ -20,7 +20,7 @@ class ParserConfig:
     timeout_connect: float = 10.0
     timeout_read: float = 30.0
     max_response_bytes: int = 10 * 1024 * 1024  # 10 MB
-    user_agent: str = "shruggie-feedtools/0.1.0"
+    user_agent: str = "shruggie-feedtools/0.1.1"
     verify_ssl: bool = True
     max_redirects: int = 5
     retries: int = 2

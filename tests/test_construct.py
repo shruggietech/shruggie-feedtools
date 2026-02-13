@@ -111,9 +111,9 @@ def test_construct_feed_metadata_from_template() -> None:
 
 
 def test_construct_feed_generator_forced() -> None:
-    """Generator is always 'shruggie-feedtools/0.1.0'."""
+    """Generator is always 'shruggie-feedtools/0.1.1'."""
     result = construct(text="x", timestamp="2026-02-10T08:30:00Z", template=MINIMAL_TEMPLATE)
-    assert result["feed"]["generator"] == "shruggie-feedtools/0.1.0"
+    assert result["feed"]["generator"] == "shruggie-feedtools/0.1.1"
 
 
 def test_construct_feed_last_updated_computed() -> None:

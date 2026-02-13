@@ -1,61 +1,43 @@
-# Release Notes — shruggie-feedtools v0.1.0
+# Release Notes — shruggie-feedtools v0.1.1
 
-**Release Date:** 2026-02-11
-**Status:** Initial public release (Alpha)
+**Release Date:** 2026-02-13
+**Status:** Patch release (Alpha)
 
 ---
 
 ## Overview
 
-First release of **shruggie-feedtools** — a Python module and CLI tool that normalizes web feed data from diverse sources into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files.
+Bug-fix and enhancement release addressing critical issues found in v0.1.0.
 
 ---
 
-## Features
+## Bug Fixes
 
-### Parse Mode
+- **Fixed: Construct mode completely non-functional in GUI** — Switching from Parse to Construct left stale widget references that silently crashed the action handler and permanently locked the busy state. Mode switching now properly cleans up all widget attributes, and `_set_busy` / `_find_action_buttons` guard against dead widgets via `winfo_exists()`.
+- **Fixed: Thread-safety violation in Parse GUI flow** — Parse input values are now captured on the main thread before dispatching to the background worker, preventing potential tkinter cross-thread access errors.
+- **Fixed: JSON feed detection too strict** — WordPress REST responses without `_links` (stripped by CDN/caching layers) and JSON Feed documents with bare version strings (`"1.0"` / `"1.1"` instead of full jsonfeed.org URL) are now correctly identified. Unrecognized JSON payloads now emit diagnostic `logger.debug()` output.
 
-- **Multi-format ingestion** — RSS 2.0, RSS 1.0/RDF, Atom 1.0, JSON Feed 1.0/1.1, and WordPress REST API
-- **Unified JSON output** — Every source format normalizes to the same schema, making downstream processing format-agnostic
-- **Flexible input** — Parse from URLs, local files, raw strings, or stdin
-- **Batch processing** — Parse multiple URLs or files in a single invocation
-- **Namespace normalization** — Dublin Core, iTunes, Media RSS, YouTube, Slash, and Content namespaces mapped to consistent prefixes
-- **Date normalization** — RFC 822, RFC 2822, ISO 8601, loose formats, and Unix epoch timestamps all normalize to ISO 8601 UTC
-- **Graceful degradation** — Malformed feeds produce partial results with error metadata instead of crashing
+## Enhancements
 
-### Construct Mode
+### GUI Output Panel
 
-- **Template-based feed creation** — Define feed structure via `.feedtemplate.json` files
-- **Text derivation strategies** — Title and description derived via `first_line`, `truncate`, `timestamp`, `template`, `same`, or `none`
-- **GUID generation** — `sha256`, `uuid4`, `timestamp`, or `sequential` strategies
-- **Link pattern support** — Generate item links from GUID values using patterns
-- **Batch construction** — Build multi-item feeds from JSONL input with per-entry overrides
-- **Schema parity** — Constructed output is structurally identical to parsed output
+- **Syntax highlighting** — JSON output is color-coded (keys, strings, numbers, booleans, punctuation) using a VS Code dark+ inspired palette via Pygments
+- **Line numbers** — Synchronized gutter with line numbers along the left side
+- **Editable output** — Output text can be manually edited; highlighting re-applies automatically with debounce
+- **Clear button** — Dedicated button to clear the output area; output also auto-clears before each Parse or Construct action
+- **Minify/Pretty toggle** — Independent toggle button to reformat current output between indented and single-line minified JSON
 
-### CLI
+### GUI Branding
 
-- `shruggie-feedtools parse` — All parse input modes with `--pretty`, `--output`, `--max-items`, `--quiet`, and SSL/timeout options
-- `shruggie-feedtools construct` — Template-driven construction with `--text`, `--text-stdin`, `--entries`, and `--entries-stdin` input modes
-- `--version` and `--help` for all commands and subcommands
-- Exit codes: `0` success, `1` partial failure, `2` argument/template error
-- Pipe-friendly: JSON to stdout by default
+- **Window icon** — Application title bar and Windows taskbar now display the shruggie-feedtools favicon (works in both dev and PyInstaller-bundled contexts)
 
-### GUI
+## Dependency Changes
 
-- **Standalone Windows application** — Two-panel layout with Parse and Construct modes
-- **Dark mode** — CustomTkinter-based interface
-- **Threaded operations** — Non-blocking parse/construct with progress indication
-- **Output panel** — Scrollable monospaced JSON display with Copy and Save buttons
+- Added `pygments >= 2.17` to `[gui]` optional dependencies
 
-### Python API
+## Test Results
 
-```python
-from shruggie_feedtools import (
-    parse, parse_url, parse_file, parse_string,
-    parse_urls, parse_files,
-    construct, construct_batch,
-)
-```
+- **307 tests passing** (up from 301 in v0.1.0 — 7 new detector tests added)
 
 ---
 
@@ -63,10 +45,18 @@ from shruggie_feedtools import (
 
 | Artifact | Description |
 |---|---|
-| `shruggie-feedtools-cli-0.1.0-win-x64.exe` | Standalone Windows CLI executable |
-| `shruggie-feedtools-gui-0.1.0-win-x64.exe` | Standalone Windows GUI executable |
-| `shruggie_feedtools-0.1.0.tar.gz` | Source distribution |
-| `shruggie_feedtools-0.1.0-py3-none-any.whl` | Python wheel |
+| `shruggie-feedtools-cli-0.1.1-win-x64.exe` | Standalone Windows CLI executable |
+| `shruggie-feedtools-gui-0.1.1-win-x64.exe` | Standalone Windows GUI executable |
+| `shruggie_feedtools-0.1.1.tar.gz` | Source distribution |
+| `shruggie_feedtools-0.1.1-py3-none-any.whl` | Python wheel |
+
+---
+
+## Upgrade Notes
+
+- Drop-in replacement for v0.1.0 — no schema changes, no API changes
+- GUI users: download the new `.exe` and replace the old one
+- pip users: `pip install --upgrade shruggie-feedtools[gui]`
 
 ---
 
@@ -85,6 +75,7 @@ from shruggie_feedtools import (
 ### Optional
 
 - `customtkinter >= 5.2` (for GUI: `pip install shruggie-feedtools[gui]`)
+- `pygments >= 2.17` (for GUI syntax highlighting; included in `[gui]` extras)
 
 ---
 
@@ -92,7 +83,7 @@ from shruggie_feedtools import (
 
 - PyPI publishing is not yet configured; install from source or use the standalone executables
 - GUI executable is Windows-only in this release
-- No CI test gate prior to release — tests are run locally (301/301 passing)
+- No CI test gate prior to release — tests are run locally (307/307 passing)
 
 ---
 
