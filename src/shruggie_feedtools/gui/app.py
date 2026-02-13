@@ -106,6 +106,10 @@ _SANS_FAMILY = "Inter"
 _SANS_FALLBACK = "Segoe UI"
 _TITLE_FAMILY = "Space Grotesk"
 
+_FONT_SIZE_DEFAULT = 13
+_FONT_SIZE_MIN = 8
+_FONT_SIZE_MAX = 32
+
 
 def _pick_font(preferred: str, fallback: str, size: int = 13) -> ctk.CTkFont:
     """Return a CTkFont trying *preferred* first, then *fallback*."""
@@ -145,8 +149,11 @@ class ShruggieFeedToolsApp(ctk.CTk):
         # Logging state
         self._logging_enabled = is_file_logging_enabled()
 
+        # Output font size (user-configurable via Settings)
+        self._font_size = _FONT_SIZE_DEFAULT
+
         # Fonts
-        self._mono_font = ctk.CTkFont(family=_MONO_FAMILY, size=13)
+        self._mono_font = ctk.CTkFont(family=_MONO_FAMILY, size=self._font_size)
         self._sans_font = ctk.CTkFont(family=_SANS_FAMILY, size=13)
         self._sans_bold = ctk.CTkFont(family=_SANS_FAMILY, size=13, weight="bold")
         self._title_font = ctk.CTkFont(family=_TITLE_FAMILY, size=15, weight="bold")
@@ -511,6 +518,7 @@ class ShruggieFeedToolsApp(ctk.CTk):
     )
     _MODE_ATTRS_SETTINGS = (
         "_theme_selector", "_logging_switch", "_log_path_label",
+        "_font_size_var", "_font_size_spinbox",
     )
 
     def _clear_input_frame(self) -> None:
@@ -1021,6 +1029,46 @@ class ShruggieFeedToolsApp(ctk.CTk):
         )
         self._log_path_label.grid(row=7, column=0, sticky="w", padx=12, pady=(4, 12))
 
+        # Divider
+        div2 = ctk.CTkFrame(frame, height=2, fg_color="gray30")
+        div2.grid(row=8, column=0, sticky="we", padx=12, pady=4)
+
+        # Section: Output Font Size
+        font_header = ctk.CTkLabel(
+            frame, text="Output Font Size", font=self._sans_bold,
+        )
+        font_header.grid(row=9, column=0, sticky="w", padx=12, pady=(12, 4))
+
+        font_desc = ctk.CTkLabel(
+            frame,
+            text=f"Set the font size for the output viewer ({_FONT_SIZE_MIN}–{_FONT_SIZE_MAX} pt).",
+            font=ctk.CTkFont(size=12),
+            text_color="gray",
+        )
+        font_desc.grid(row=10, column=0, sticky="w", padx=12, pady=(0, 6))
+
+        spin_frame = ctk.CTkFrame(frame, fg_color="transparent")
+        spin_frame.grid(row=11, column=0, sticky="w", padx=12, pady=(0, 12))
+
+        ctk.CTkLabel(
+            spin_frame, text="Font Size:", font=self._sans_font,
+        ).pack(side="left", padx=(0, 10))
+
+        self._font_size_var = tk.IntVar(value=self._font_size)
+        self._font_size_spinbox = tk.Spinbox(
+            spin_frame,
+            from_=_FONT_SIZE_MIN,
+            to=_FONT_SIZE_MAX,
+            textvariable=self._font_size_var,
+            width=5,
+            font=(self._sans_font.cget("family"), 13),
+            command=self._on_font_size_change,
+        )
+        self._font_size_spinbox.pack(side="left")
+        # Also validate on manual typed entry (Return / FocusOut)
+        self._font_size_spinbox.bind("<Return>", lambda _e: self._on_font_size_change())
+        self._font_size_spinbox.bind("<FocusOut>", lambda _e: self._on_font_size_change())
+
     # -----------------------------------------------------------------------
     # Theme management
     # -----------------------------------------------------------------------
@@ -1087,6 +1135,54 @@ class ShruggieFeedToolsApp(ctk.CTk):
     # -----------------------------------------------------------------------
     # Logging toggle
     # -----------------------------------------------------------------------
+
+    def _on_font_size_change(self) -> None:
+        """Validate, clamp, and apply the output viewer font size."""
+        try:
+            raw = self._font_size_var.get()
+        except (tk.TclError, ValueError):
+            # Non-numeric garbage — reset to current value
+            self._font_size_var.set(self._font_size)
+            return
+
+        clamped = raw
+        if raw < _FONT_SIZE_MIN:
+            clamped = _FONT_SIZE_MIN
+            logger.debug(
+                "Font size %d below minimum; clamped to %d", raw, _FONT_SIZE_MIN,
+            )
+        elif raw > _FONT_SIZE_MAX:
+            clamped = _FONT_SIZE_MAX
+            logger.debug(
+                "Font size %d above maximum; clamped to %d", raw, _FONT_SIZE_MAX,
+            )
+
+        if clamped != raw:
+            self._font_size_var.set(clamped)
+
+        if clamped == self._font_size:
+            return  # no change
+
+        self._font_size = clamped
+        logger.debug("Output font size changed to %d", clamped)
+        self._apply_font_size()
+
+    def _apply_font_size(self) -> None:
+        """Push the current font size to the output editor and gutter."""
+        size = self._font_size
+        self._mono_font.configure(size=size)
+
+        if hasattr(self, "_output_box") and self._widget_alive(self._output_box):
+            self._output_box.configure(
+                font=(self._mono_font.cget("family"), size),
+            )
+        if hasattr(self, "_line_numbers") and self._widget_alive(self._line_numbers):
+            self._line_numbers.configure(
+                font=(self._mono_font.cget("family"), size),
+            )
+        # Refresh line-number widths / scroll
+        if hasattr(self, "_update_line_numbers"):
+            self.after_idle(self._update_line_numbers)
 
     def _toggle_logging(self) -> None:
         """Enable or disable debug file logging."""
