@@ -7,6 +7,7 @@ a = Analysis(
     binaries=[],
     datas=[
         ('src/shruggie_feedtools/gui', 'shruggie_feedtools/gui'),
+        ('brand/favicon.ico', 'brand'),
         ('brand', 'brand'),
     ],
     hiddenimports=[],

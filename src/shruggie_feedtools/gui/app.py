@@ -86,12 +86,25 @@ _THEME_COLORS: dict[str, dict[str, str]] = {
 }
 
 
+def _resource_path(relative: str) -> Path:
+    """Return the absolute path to a bundled resource.
+
+    In a PyInstaller one-file build the resources are unpacked into a
+    temporary directory stored in ``sys._MEIPASS``.  During normal
+    development the workspace root is three directories above this file
+    (gui/ -> shruggie_feedtools/ -> src/ -> project root).
+    """
+    if hasattr(sys, "_MEIPASS"):
+        return Path(sys._MEIPASS) / relative  # type: ignore[attr-defined]
+    return Path(__file__).resolve().parents[3] / relative
+
+
 def _set_windows_appusermodelid() -> None:
     """Set the Windows AppUserModelID so the taskbar groups our icon."""
     try:
         import ctypes
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(  # type: ignore[attr-defined]
-            "com.shruggie.feedtools"
+            "shruggie.feedtools.gui.1.0"
         )
     except Exception:
         pass
@@ -189,32 +202,37 @@ class ShruggieFeedToolsApp(ctk.CTk):
     # -----------------------------------------------------------------------
 
     def _find_icon_paths(self) -> tuple[Path | None, Path | None]:
-        """Search candidate directories for favicon.ico / favicon.png."""
-        base_dirs: list[Path] = []
-        if hasattr(sys, "_MEIPASS"):
-            base_dirs.append(Path(sys._MEIPASS))  # type: ignore[attr-defined]
+        """Search candidate directories for favicon.ico / favicon.png.
 
-        # Source-tree layout: app.py → gui/ → shruggie_feedtools/ → src/ → project root
-        base_dirs.append(Path(__file__).resolve().parents[3])
-
-        # Editable-install / site-packages layout (parents[2] = package root's parent)
-        base_dirs.append(Path(__file__).resolve().parents[2])
-
-        base_dirs.append(Path.cwd())
-
+        Uses :func:`_resource_path` (PyInstaller-aware) as the primary
+        lookup, with CWD as a last-resort fallback.
+        """
         ico_path: Path | None = None
         png_path: Path | None = None
-        for base in base_dirs:
-            candidate_ico = base / "brand" / "favicon.ico"
-            candidate_png = base / "brand" / "favicon.png"
-            if ico_path is None and candidate_ico.exists():
-                ico_path = candidate_ico
-            if png_path is None and candidate_png.exists():
-                png_path = candidate_png
+
+        # Primary: _resource_path handles both _MEIPASS and dev-tree
+        candidate_ico = _resource_path("brand/favicon.ico")
+        candidate_png = _resource_path("brand/favicon.png")
+        if candidate_ico.exists():
+            ico_path = candidate_ico
+        if candidate_png.exists():
+            png_path = candidate_png
+
+        # Fallback: CWD (for edge-case invocations)
+        if ico_path is None:
+            cwd_ico = Path.cwd() / "brand" / "favicon.ico"
+            if cwd_ico.exists():
+                ico_path = cwd_ico
+        if png_path is None:
+            cwd_png = Path.cwd() / "brand" / "favicon.png"
+            if cwd_png.exists():
+                png_path = cwd_png
 
         if ico_path is None and png_path is None:
-            searched = [str(b / "brand") for b in base_dirs]
-            logger.debug("No favicon found; searched: %s", searched)
+            logger.debug(
+                "No favicon found; searched: %s, %s",
+                candidate_ico, Path.cwd() / "brand",
+            )
         return ico_path, png_path
 
     def _apply_icon(self) -> None:
