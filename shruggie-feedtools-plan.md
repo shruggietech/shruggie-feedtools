@@ -91,12 +91,12 @@ All tests pass. No imports from `adapters/`, `construct/`, `cli/`, or `gui/` are
 - [§4 Parse Mode — Public API](shruggie-feedtools-spec.md#4-parse-mode--public-api) — `parse`, `parse_url`, `parse_file`, `parse_string`, `parse_urls`, `parse_files`, format-specific parsers, `detect_feed_type`
 - [§6.2 Data Flow — Parse Mode](shruggie-feedtools-spec.md#62-data-flow--parse-mode) — Fetch → Detect → Adapt → Namespace → Normalize → Schema
 - [§6.4 Detection Pipeline](shruggie-feedtools-spec.md#64-detection-pipeline-parse-mode) — XML vs JSON routing, format sniffing
-- [§8 Adapter Specifications](shruggie-feedtools-spec.md#8-adapter-specifications) — feedparser adapter (§8.1), WordPress REST adapter (§8.2), JSON Feed adapter (§8.3)
+- [§8 Adapter Specifications](shruggie-feedtools-spec.md#8-adapter-specifications) — feedparser adapter (§8.1)
 - [§9 Error Handling](shruggie-feedtools-spec.md#9-error-handling) — Graceful degradation, error categories
 - [§11 HTTP Fetching](shruggie-feedtools-spec.md#11-http-fetching) — Timeout, retry, redirect, response size, headers
 - [§17.2 Fixture Data](shruggie-feedtools-spec.md#172-fixture-data) — All parse fixture files and their purposes
 - [§17.3 test_detector.py](shruggie-feedtools-spec.md#173-test-specifications) — Format detection tests
-- [§17.3 test_adapters.py](shruggie-feedtools-spec.md#173-test-specifications) — Per-adapter tests (RSS 2.0, Atom 1.0, RSS 1.0, WP REST, JSON Feed)
+- [§17.3 test_adapters.py](shruggie-feedtools-spec.md#173-test-specifications) — Per-adapter tests (RSS 2.0, Atom 1.0, RSS 1.0)
 - [§17.3 test_normalizer.py](shruggie-feedtools-spec.md#173-test-specifications) — Schema mapping and field normalization tests
 - [§17.3 test_fetcher.py](shruggie-feedtools-spec.md#173-test-specifications) — HTTP client tests
 - [§17.3 test_parser.py](shruggie-feedtools-spec.md#173-test-specifications) — End-to-end parse pipeline integration tests
@@ -134,8 +134,6 @@ Create realistic, representative test data for every format. These files must be
 - `atom10/youtube_channel.xml` — YouTube: `yt:videoId`, `yt:channelId`, `media:group`, `media:thumbnail`
 - `atom10/statuspage.xml` — Statuspage.io: multiple `<updated>` elements per entry
 - `rss1/rdf_gov.xml` — Government RDF: full `dc:` namespace usage
-- `json_feed/v1_standard.json` — JSON Feed 1.1: authors array, tags, attachments, content_html, summary
-- `wp_rest/posts_embedded.json` — WordPress REST `?_embed` response: `_embedded` author, featured media, `wp:term`
 - `edge_cases/mixed_case_elements.xml` — `<Title>`, `<TITLE>`, `<title>` in same feed
 - `edge_cases/custom_namespace_prefixes.xml` — Non-standard prefix declarations resolving to known URIs
 - `edge_cases/bad_dates.xml` — 15+ date format variants including malformed, empty, ambiguous timezone, epoch
@@ -144,17 +142,15 @@ Create realistic, representative test data for every format. These files must be
 
 **Core parse modules:**
 
-- `core/detector.py` — `detect_feed_type(content: bytes) -> str | None` per §6.4 detection pipeline. XML path (feedparser version sniffing) and JSON path (jsonfeed.org / WP REST structure sniffing). Returns format string or `None`.
+- `core/detector.py` — `detect_feed_type(content: bytes) -> str | None` per §6.4 detection pipeline. XML path (feedparser version sniffing). Returns format string or `None`.
 - `core/fetcher.py` — `fetch(url, config) -> FetchResult` using `httpx`. Captures `Content-Type`, final URL, ETag, Last-Modified. Handles timeouts, retries with exponential backoff, redirect limits, response size cap, custom User-Agent, SSL toggle. Returns structured result (not raw exception).
 - `core/normalizer.py` — `normalize_feed(intermediate, config) -> dict` and `normalize_item(intermediate, config) -> dict`. Maps adapter intermediate dicts → output schema fields. Implements fallback chains (description from summary or truncated content, author from `dc:creator`, guid from link, thumbnail from `media:thumbnail`/`media:content`/enclosure). Categories deduplication. Extension bucketing by normalized prefix.
 - `utils/html.py` — `extract_thumbnail(html_content) -> str` for pulling thumbnail URLs from HTML img tags in content fields.
 
 **Adapters:**
 
-- `adapters/__init__.py` — Exports: `parse_rss`, `parse_atom`, `parse_rdf`, `parse_json_feed`, `parse_wp_rest`
+- `adapters/__init__.py` — Exports: `parse_rss`, `parse_atom`, `parse_rdf`
 - `adapters/feedparser_adapter.py` — Wraps `feedparser.parse()`. Handles RSS 2.0, Atom 1.0, RSS 1.0/RDF. Extracts `result.version` → `source.type`. Maps `result.feed` and `result.entries` → intermediate dicts. Namespace prefix normalization on all prefixed fields. Handles `bozo` flag (warn, continue).
-- `adapters/json_feed_adapter.py` — JSON Feed 1.0/1.1. Maps all fields per §8.3 table. Handles `authors` array (v1.1) vs `author` object (v1.0). Attachments → enclosures.
-- `adapters/wp_rest_adapter.py` — WordPress REST. Maps all fields per §8.2 table. Handles `_embedded` data for author, featured media, categories. `date_gmt` + `Z` for dates. Base URL extraction from wp-json path.
 
 **Parse orchestrator:**
 
@@ -167,11 +163,11 @@ Create realistic, representative test data for every format. These files must be
 **Tests:**
 
 - `tests/test_detector.py` — All 10 tests from §17.3 detector table
-- `tests/test_adapters.py` — All adapter tests from §17.3 (RSS 2.0: 10 tests, Atom 1.0: 6 tests, RSS 1.0: 3 tests, WP REST: 9 tests, JSON Feed: 9 tests)
+- `tests/test_adapters.py` — All adapter tests from §17.3 (RSS 2.0: 10 tests, Atom 1.0: 6 tests, RSS 1.0: 3 tests)
 - `tests/test_normalizer.py` — All 30 tests from §17.3 normalizer table
 - `tests/test_fetcher.py` — All 18 tests from §17.3 fetcher table (using `httpx` mock transport or `pytest-httpx`)
 - `tests/test_parser.py` — All 22 integration tests from §17.3 parser table
-- `tests/snapshots/` — Generate all 17 parse-mode golden files (§17.4 snapshot coverage table, parse entries)
+- `tests/snapshots/` — Generate all 15 parse-mode golden files (§17.4 snapshot coverage table, parse entries)
 
 ### Verification
 

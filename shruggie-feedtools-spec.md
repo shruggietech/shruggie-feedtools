@@ -12,7 +12,7 @@
 
 ## 1. Executive Summary
 
-`shruggie-feedtools` is a Python module that normalizes web feed data from diverse sources — RSS, Atom, JSON Feed, WordPress REST API, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. It ships as a CLI tool and a standalone Windows GUI application, distributed as pre-built executables via GitHub Releases. The module is designed from the ground up for eventual integration as a backend for an HTTP API service.
+`shruggie-feedtools` is a Python module that normalizes web feed data from diverse sources — RSS, Atom, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. It ships as a CLI tool and a standalone Windows GUI application, distributed as pre-built executables via GitHub Releases. The module is designed from the ground up for eventual integration as a backend for an HTTP API service.
 
 ### 1.1 Branding Context
 
@@ -31,7 +31,7 @@
 
 The tool has two primary modes of operation:
 
-1. **Parse mode** — Ingest feeds from URLs, files, or raw strings across multiple formats (RSS, Atom, JSON Feed, WordPress REST) and normalize them into a single predictable JSON schema.
+1. **Parse mode** — Ingest feeds from URLs, files, or raw strings across multiple formats (RSS, Atom) and normalize them into a single predictable JSON schema.
 
 2. **Construct mode** — Take raw text content, a timestamp, and a template file, and produce schema-compliant JSON feed output. This enables users to create feeds from arbitrary data sources that don't natively expose a feed format.
 
@@ -44,7 +44,6 @@ The JS feedsmith preserves original per-format structure. We take the opposite s
 Additionally:
 - **Language**: Python (they're JavaScript/TypeScript)
 - **Scope**: HTTP fetching, batch processing, CLI, GUI, `.exe`, and template-based construction (they're a parsing library only)
-- **JSON-native sources**: WordPress REST auto-detection (they parse strings only)
 - **Construction**: They generate feeds from structured objects. We generate feeds from raw text + templates — a different problem entirely.
 
 ### 1.4 What We Borrowed from feedsmith (JS)
@@ -69,8 +68,6 @@ Any publicly accessible endpoint returning **time-ordered entries** with at mini
 | Service status pages | Statuspage.io, UptimeRobot | Atom 1.0 / RSS 2.0 |
 | Financial / market feeds | SEC EDGAR, Yahoo Finance | RSS 2.0, Atom |
 | Government / regulatory | Federal Register, .gov portals | RSS 1.0 (RDF), RSS 2.0, Atom |
-| CMS REST APIs | WordPress `/wp-json/wp/v2/posts` | JSON (auto-detected) |
-| JSON Feed sites | `jsonfeed.org` spec implementors | JSON Feed 1.0 / 1.1 |
 | Reddit / forums | Subreddit `.rss`, Discourse | RSS 2.0 with Media RSS |
 | **Custom / constructed** | **Any text source + template** | **Template-based construction** |
 
@@ -112,7 +109,7 @@ Any publicly accessible endpoint returning **time-ordered entries** with at mini
 |-------|----------|-------------|
 | Text + timestamp + template file | **P0** | See §5 for full specification |
 
-### 2.4 Namespace Extensions (Within XML Feeds)
+### 2.3 Namespace Extensions (Within XML Feeds)
 
 | Namespace | Prefix | Common Sources |
 |-----------|--------|----------------|
@@ -155,7 +152,7 @@ The JSON output schema is the contract. Parse mode and construct mode both produ
 | `status` | `string` | Yes | `"ok"` or `"error"` |
 | `message` | `string` | No | Human-readable error (present when `status` is `"error"`) |
 | `schema_version` | `string` | Yes | Output schema version. `"1.0"` for MVP. |
-| `source.type` | `string` | Yes | `"rss2"`, `"rss1"`, `"rss091"`, `"atom10"`, `"atom03"`, `"json_feed"`, `"wp_rest"`, `"constructed"` |
+| `source.type` | `string` | Yes | `"rss2"`, `"rss1"`, `"rss091"`, `"atom10"`, `"atom03"`, `"constructed"` |
 | `source.url` | `string\|null` | Yes | Original URL if fetched; `null` for files/strings/constructed |
 | `source.origin` | `string` | Yes | `"url"`, `"file"`, `"string"`, `"template"` |
 | `feed` | `object` | Yes | Feed-level metadata (§3.2) |
@@ -269,7 +266,6 @@ Accepted input formats:
 - RFC 822 / RFC 2822 (`Thu, 09 Feb 2026 12:00:00 GMT`)
 - ISO 8601 (`2026-02-09T12:00:00Z`, `2026-02-09T12:00:00+05:00`)
 - Loose formats (`February 9, 2026`, `2026-02-09`)
-- WordPress REST (`2026-02-09T12:00:00`) — naive datetime, assumed UTC
 - Unix epoch (integer or float) — supported in construct mode
 
 Unparseable dates → `null` + warning log. Never crash on a bad date.
@@ -300,14 +296,12 @@ result = parse("https://news.ycombinator.com/rss")
 
 ```python
 from shruggie_feedtools.adapters import (
-    parse_rss, parse_atom, parse_rdf, parse_json_feed, parse_wp_rest
+    parse_rss, parse_atom, parse_rdf
 )
 
 result = parse_rss(rss_xml_string)
 result = parse_atom(atom_xml_string)
 result = parse_rdf(rdf_xml_string)
-result = parse_json_feed(json_feed_string)
-result = parse_wp_rest(wp_json_string, base_url="https://example.com")
 ```
 
 ### 4.3 Batch Operations
@@ -325,7 +319,7 @@ results = parse_files(["/path/to/a.xml", "/path/to/b.xml"])
 from shruggie_feedtools.core.detector import detect_feed_type
 
 feed_type = detect_feed_type(content_bytes)
-# Returns: "rss2", "atom10", "rss1", "json_feed", "wp_rest", or None
+# Returns: "rss2", "atom10", "rss1", or None
 ```
 
 ---
@@ -690,9 +684,7 @@ shruggie-feedtools/
 │       │   └── namespaces.py       # Namespace URI → prefix normalization
 │       ├── adapters/
 │       │   ├── __init__.py         # Exports: parse_rss, parse_atom, etc.
-│       │   ├── feedparser_adapter.py
-│       │   ├── wp_rest_adapter.py
-│       │   └── json_feed_adapter.py
+│       │   └── feedparser_adapter.py
 │       ├── construct/
 │       │   ├── __init__.py         # Exports: construct, construct_batch, load_template
 │       │   ├── builder.py          # Core construction logic
@@ -725,10 +717,6 @@ shruggie-feedtools/
 │   │   │   └── statuspage.xml
 │   │   ├── rss1/
 │   │   │   └── rdf_gov.xml
-│   │   ├── json_feed/
-│   │   │   └── v1_standard.json
-│   │   ├── wp_rest/
-│   │   │   └── posts_embedded.json
 │   │   ├── templates/
 │   │   │   ├── minimal.feedtemplate.json
 │   │   │   ├── incident_log.feedtemplate.json
@@ -855,11 +843,6 @@ Output (schema-compliant dict/JSON)
 
 ```
 Raw bytes
-    │
-    ├─ Starts with '{' or '[' ────► JSON path
-    │                                  ├─ "version" contains "jsonfeed.org"? → json_feed_adapter
-    │                                  ├─ Has "title.rendered" + "_links"?   → wp_rest_adapter
-    │                                  └─ Unknown                             → error
     │
     └─ Starts with '<' or BOM ────► XML path
                                        └─ feedparser → inspect result.version
@@ -1010,51 +993,6 @@ Responsibilities:
 - Map `result.entries` → intermediate item list
 - Namespace prefix normalization on all namespace-prefixed fields
 - Handle `bozo` flag — log warning, continue
-
-### 8.2 WordPress REST Adapter
-
-Detection: valid JSON array with `title.rendered`, `content.rendered`, `_links`.
-
-Auto-`_embed`: appends `?_embed` for inline author/category/media.
-
-| Output Field | WP REST Source |
-|-------------|---------------|
-| `feed.title` | Site name from link relations or base URL |
-| `feed.link` | Base URL (strip `/wp-json/...`) |
-| `item.title` | `post.title.rendered` (decoded) |
-| `item.link` | `post.link` |
-| `item.guid` | `post.guid.rendered` |
-| `item.pub_date` | `post.date_gmt` + `Z` |
-| `item.updated` | `post.modified_gmt` + `Z` |
-| `item.author` | `post._embedded.author[0].name` |
-| `item.description` | `post.excerpt.rendered` |
-| `item.content` | `post.content.rendered` |
-| `item.thumbnail` | `post._embedded["wp:featuredmedia"][0].source_url` |
-| `item.categories` | `post._embedded["wp:term"]` flattened |
-
-Pagination: MVP processes first page. `X-WP-Total`/`X-WP-TotalPages` stored in `feed.extensions.wp`.
-
-### 8.3 JSON Feed Adapter
-
-Detection: JSON object with `version` containing `jsonfeed.org`.
-
-| Output Field | JSON Feed Source |
-|-------------|-----------------|
-| `feed.title` | `title` |
-| `feed.link` | `home_page_url` |
-| `feed.description` | `description` |
-| `feed.image` | `icon` or `favicon` |
-| `feed.author` | `authors[0].name` (v1.1) or `author.name` (v1.0) |
-| `item.title` | `items[].title` |
-| `item.link` | `items[].url` |
-| `item.guid` | `items[].id` |
-| `item.pub_date` | `items[].date_published` |
-| `item.updated` | `items[].date_modified` |
-| `item.content` | `items[].content_html` or `items[].content_text` |
-| `item.description` | `items[].summary` or truncated content |
-| `item.thumbnail` | `items[].image` or `items[].banner_image` |
-| `item.enclosures` | `items[].attachments[]` |
-| `item.categories` | `items[].tags[]` |
 
 ---
 
@@ -1585,8 +1523,6 @@ Parse mode fixtures:
 | `atom10/youtube_channel.xml` | Atom 1.0 + YouTube | yt:videoId, yt:channelId, media:group, media:thumbnail. |
 | `atom10/statuspage.xml` | Atom 1.0 | Statuspage.io incident feed. Multiple updates per entry. |
 | `rss1/rdf_gov.xml` | RSS 1.0 (RDF) | Government .gov feed. RDF structure, dc: namespace throughout. |
-| `json_feed/v1_standard.json` | JSON Feed 1.1 | Standard JSON Feed with authors array, tags, attachments, content_html. |
-| `wp_rest/posts_embedded.json` | WordPress REST | `_embedded` author, featured media, wp:term categories. |
 | `edge_cases/mixed_case_elements.xml` | RSS 2.0 | `<Title>`, `<TITLE>`, `<title>` in same feed. |
 | `edge_cases/custom_namespace_prefixes.xml` | RSS 2.0 | Non-standard prefixes for dc, content, itunes namespaces. |
 | `edge_cases/bad_dates.xml` | RSS 2.0 | 15+ date formats including malformed, ambiguous timezones, epoch, empty. |
@@ -1617,8 +1553,6 @@ Each test file below lists its test functions and what each function verifies.
 | `test_detect_rss2_standard` | `rss2/minimal.xml` bytes | Returns `"rss2"` |
 | `test_detect_atom10_standard` | `atom10/github_releases.xml` bytes | Returns `"atom10"` |
 | `test_detect_rss1_rdf` | `rss1/rdf_gov.xml` bytes | Returns `"rss1"` |
-| `test_detect_json_feed` | `json_feed/v1_standard.json` bytes | Returns `"json_feed"` |
-| `test_detect_wp_rest` | `wp_rest/posts_embedded.json` bytes | Returns `"wp_rest"` |
 | `test_detect_xml_with_bom` | `encoding_utf8_bom.xml` bytes | Returns correct type despite BOM prefix |
 | `test_detect_empty_bytes` | `b""` | Returns `None` |
 | `test_detect_html_page` | `<html>...</html>` bytes | Returns `None` (not a feed) |
@@ -1697,34 +1631,6 @@ Tests each adapter in isolation. Adapters receive raw content and return interme
 | `test_rss1_rdf_dc_namespace` | `rss1/rdf_gov.xml` | Items contain `dc:` prefixed fields throughout |
 | `test_rss1_source_type` | `rss1/rdf_gov.xml` | Source type reports as `"rss1"` |
 
-**WordPress REST adapter:**
-
-| Test Function | Input | Expected Result |
-|--------------|-------|-----------------|
-| `test_wp_rest_extracts_title` | `wp_rest/posts_embedded.json` | `item.title` extracted from `title.rendered` with HTML entities decoded |
-| `test_wp_rest_extracts_content` | `wp_rest/posts_embedded.json` | `item.content` extracted from `content.rendered` |
-| `test_wp_rest_extracts_excerpt` | `wp_rest/posts_embedded.json` | `item.description` extracted from `excerpt.rendered` |
-| `test_wp_rest_embedded_author` | `wp_rest/posts_embedded.json` | `item.author` extracted from `_embedded.author[0].name` |
-| `test_wp_rest_embedded_featured_media` | `wp_rest/posts_embedded.json` | `item.thumbnail` extracted from `_embedded["wp:featuredmedia"][0].source_url` |
-| `test_wp_rest_embedded_categories` | `wp_rest/posts_embedded.json` | `item.categories` flattened from `_embedded["wp:term"]` |
-| `test_wp_rest_guid` | `wp_rest/posts_embedded.json` | `item.guid` extracted from `guid.rendered` |
-| `test_wp_rest_dates_gmt` | `wp_rest/posts_embedded.json` | `item.pub_date` from `date_gmt`, `item.updated` from `modified_gmt`, both with `Z` suffix |
-| `test_wp_rest_base_url_extraction` | `wp_rest/posts_embedded.json` with `base_url` | `feed.link` strips `/wp-json/...` path |
-
-**JSON Feed adapter:**
-
-| Test Function | Input | Expected Result |
-|--------------|-------|-----------------|
-| `test_json_feed_extracts_title` | `json_feed/v1_standard.json` | `feed.title` matches source `title` |
-| `test_json_feed_home_page_url` | `json_feed/v1_standard.json` | `feed.link` from `home_page_url` |
-| `test_json_feed_authors_array` | `json_feed/v1_standard.json` | `feed.author` from `authors[0].name` (v1.1 array format) |
-| `test_json_feed_item_content_html` | `json_feed/v1_standard.json` | `item.content` from `content_html` |
-| `test_json_feed_item_tags` | `json_feed/v1_standard.json` | `item.categories` from `tags[]` |
-| `test_json_feed_item_attachments` | `json_feed/v1_standard.json` | `item.enclosures` mapped from `attachments[]` with `url`, `mime_type`, `size_in_bytes` |
-| `test_json_feed_item_dates` | `json_feed/v1_standard.json` | `item.pub_date` from `date_published`, `item.updated` from `date_modified` |
-| `test_json_feed_item_image` | `json_feed/v1_standard.json` | `item.thumbnail` from `image` or `banner_image` |
-| `test_json_feed_item_summary` | `json_feed/v1_standard.json` | `item.description` from `summary` field |
-
 #### `test_normalizer.py` — Schema Mapping and Field Normalization
 
 Tests the normalizer module, which takes the intermediate dict output from any adapter and maps it into the final output schema fields. Covers fallback chains, default values, date normalization, thumbnail extraction, and extension bucketing.
@@ -1776,7 +1682,7 @@ Tests the Pydantic models that enforce the output schema contract. These models 
 | `test_status_enum_error` | `status: "error"` | Accepted |
 | `test_status_enum_invalid` | `status: "maybe"` | Pydantic `ValidationError` |
 | `test_schema_version_required` | Response dict missing `schema_version` | `ValidationError` |
-| `test_source_type_valid_values` | Each of `"rss2"`, `"rss1"`, `"atom10"`, `"json_feed"`, `"wp_rest"`, `"constructed"` | All accepted |
+| `test_source_type_valid_values` | Each of `"rss2"`, `"rss1"`, `"atom10"`, `"constructed"` | All accepted |
 | `test_source_origin_valid_values` | Each of `"url"`, `"file"`, `"string"`, `"template"` | All accepted |
 | `test_source_url_nullable` | `source.url: null` | Accepted (valid for file/string/template origins) |
 | `test_feed_title_is_string` | `feed.title: 123` (integer) | `ValidationError` — must be string |
@@ -1808,8 +1714,6 @@ Integration tests that run the full pipeline: raw content → detection → adap
 | `test_parse_atom10_github_full_pipeline` | `atom10/github_releases.xml` via `parse_string()` | `source.type: "atom10"`, items have `link`, `content`, `updated` dates |
 | `test_parse_atom10_youtube_full_pipeline` | `atom10/youtube_channel.xml` via `parse_string()` | Items have `thumbnail`, `extensions.yt.videoId` |
 | `test_parse_rss1_rdf_full_pipeline` | `rss1/rdf_gov.xml` via `parse_string()` | `source.type: "rss1"`, items parse with dc: fields normalized |
-| `test_parse_json_feed_full_pipeline` | `json_feed/v1_standard.json` via `parse_string()` | `source.type: "json_feed"`, feed and items fully populated |
-| `test_parse_wp_rest_full_pipeline` | `wp_rest/posts_embedded.json` via `parse_string()` | `source.type: "wp_rest"`, items have `author`, `thumbnail`, `categories` from embedded data |
 | `test_parse_malformed_degrades_gracefully` | `rss2/hairy_malformed.xml` via `parse_string()` | `status: "ok"`, returns partial items; missing fields get defaults; no exception raised |
 | `test_parse_empty_string_returns_error` | `""` via `parse_string()` | `status: "error"`, `message` present |
 | `test_parse_html_page_returns_error` | `<html>...</html>` via `parse_string()` | `status: "error"`, message indicates unrecognized format |
@@ -2100,8 +2004,6 @@ Every parse fixture and every construct template fixture has a corresponding sna
 | `snapshots/atom10/youtube_channel.json` | `fixtures/atom10/youtube_channel.xml` | `parse_string()` |
 | `snapshots/atom10/statuspage.json` | `fixtures/atom10/statuspage.xml` | `parse_string()` |
 | `snapshots/rss1/rdf_gov.json` | `fixtures/rss1/rdf_gov.xml` | `parse_string()` |
-| `snapshots/json_feed/v1_standard.json` | `fixtures/json_feed/v1_standard.json` | `parse_string()` |
-| `snapshots/wp_rest/posts_embedded.json` | `fixtures/wp_rest/posts_embedded.json` | `parse_string()` |
 | `snapshots/edge_cases/mixed_case_elements.json` | `fixtures/edge_cases/mixed_case_elements.xml` | `parse_string()` |
 | `snapshots/edge_cases/custom_namespace_prefixes.json` | `fixtures/edge_cases/custom_namespace_prefixes.xml` | `parse_string()` |
 | `snapshots/edge_cases/bad_dates.json` | `fixtures/edge_cases/bad_dates.xml` | `parse_string()` |
@@ -2112,7 +2014,7 @@ Every parse fixture and every construct template fixture has a corresponding sna
 | `snapshots/construct/changelog_with_link_pattern.json` | `templates/changelog.feedtemplate.json` + single entry | `construct()` |
 | `snapshots/construct/entry_overrides.json` | `templates/incident_log.feedtemplate.json` + `entries/entries_with_overrides.jsonl` | `construct_batch()` |
 
-Total: 21 snapshot golden files covering all parse fixtures and the primary construct scenarios.
+Total: 19 snapshot golden files covering all parse fixtures and the primary construct scenarios.
 
 #### What Snapshot Diffs Catch
 

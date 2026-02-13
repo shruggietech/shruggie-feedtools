@@ -145,7 +145,7 @@ class TestSourceFields:
 
     @pytest.mark.parametrize(
         "source_type",
-        ["rss2", "rss1", "atom10", "json_feed", "wp_rest", "constructed"],
+        ["rss2", "rss1", "atom10", "constructed"],
     )
     def test_source_type_valid_values(self, source_type: str):
         """All valid source.type values are accepted."""

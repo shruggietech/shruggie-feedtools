@@ -27,8 +27,6 @@ class SourceType(str, Enum):
     RSS091 = "rss091"
     ATOM10 = "atom10"
     ATOM03 = "atom03"
-    JSON_FEED = "json_feed"
-    WP_REST = "wp_rest"
     CONSTRUCTED = "constructed"
 
 

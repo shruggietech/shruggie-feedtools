@@ -3,7 +3,7 @@
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
 
-Python module that normalizes web feed data from diverse sources — RSS, Atom, JSON Feed, WordPress REST API, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. Ships as a CLI tool and a standalone Windows GUI application, distributed as pre-built executables via GitHub Releases.
+Python module that normalizes web feed data from diverse sources — RSS, Atom, and other time-sequenced web endpoints — into a single, predictable JSON schema. It also constructs schema-compliant feed output from arbitrary text input using template files. Ships as a CLI tool and a standalone Windows GUI application, distributed as pre-built executables via GitHub Releases.
 
 ---
 
@@ -11,7 +11,7 @@ Python module that normalizes web feed data from diverse sources — RSS, Atom, 
 
 ### Parse Mode
 
-Ingest feeds from URLs, files, or raw strings across multiple formats (RSS 2.0, RSS 1.0, Atom 1.0, JSON Feed, WordPress REST) and normalize them into a single predictable JSON schema. Every parsed feed produces the same output structure regardless of the source format.
+Ingest feeds from URLs, files, or raw strings across multiple formats (RSS 2.0, RSS 1.0, Atom 1.0) and normalize them into a single predictable JSON schema. Every parsed feed produces the same output structure regardless of the source format.
 
 ### Construct Mode
 
@@ -227,8 +227,6 @@ Construct a multi-item feed from entries and a template. Entries can be a list o
 | Service status pages | Statuspage.io, UptimeRobot | Atom 1.0 / RSS 2.0 |
 | Financial / market feeds | SEC EDGAR, Yahoo Finance | RSS 2.0, Atom |
 | Government / regulatory | Federal Register, .gov portals | RSS 1.0 (RDF), RSS 2.0, Atom |
-| CMS REST APIs | WordPress `/wp-json/wp/v2/posts` | JSON (auto-detected) |
-| JSON Feed sites | `jsonfeed.org` spec implementors | JSON Feed 1.0 / 1.1 |
 | Reddit / forums | Subreddit `.rss`, Discourse | RSS 2.0 with Media RSS |
 | **Custom / constructed** | **Any text source + template** | **Template-based construction** |
 

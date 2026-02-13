@@ -2,16 +2,13 @@
 
 Determines the format of raw feed content (bytes) by inspecting structure:
 - XML feeds are routed through feedparser for version sniffing
-- JSON content is checked for JSON Feed or WordPress REST signatures
 - An optional content-type hint (from HTTP headers or file extension) is used
   as a fallback when byte-level sniffing is inconclusive.
 """
 
 from __future__ import annotations
 
-import json
 import logging
-from typing import Any
 
 import feedparser
 
@@ -27,14 +24,6 @@ _FEEDPARSER_VERSION_MAP: dict[str, str] = {
     "atom10": "atom10",
     "atom03": "atom03",
 }
-
-# Content-type substrings that indicate JSON content
-_JSON_CONTENT_TYPES = (
-    "application/json",
-    "application/feed+json",
-    "text/json",
-    "application/vnd.api+json",
-)
 
 # Content-type substrings that indicate XML/feed content
 _XML_CONTENT_TYPES = (
@@ -72,9 +61,8 @@ def detect_feed_type(
             fallback when byte-level detection fails.
 
     Returns:
-        A format string (``"rss2"``, ``"atom10"``, ``"rss1"``, ``"json_feed"``,
-        ``"wp_rest"``, etc.) or ``None`` if the content does not match any
-        known feed format.
+        A format string (``"rss2"``, ``"atom10"``, ``"rss1"``, etc.) or
+        ``None`` if the content does not match any known feed format.
     """
     if not content:
         logger.debug("detect_feed_type: empty content")
@@ -100,13 +88,6 @@ def detect_feed_type(
 
     first_byte = stripped[0:1]
 
-    # JSON path
-    if first_byte in (b"{", b"["):
-        result = _detect_json_type(stripped)
-        logger.debug("detect_feed_type: JSON path -> %s", result)
-        if result is not None:
-            return result
-
     # XML path
     if first_byte == b"<":
         result = _detect_xml_type(stripped)
@@ -120,18 +101,6 @@ def detect_feed_type(
     # content-type header as a hint to try the other detection path.
     ct_lower = (content_type or "").lower().split(";")[0].strip()
 
-    if ct_lower and first_byte not in (b"{", b"["):
-        # Content-Type says JSON but first byte wasn't { or [
-        if any(jct in ct_lower for jct in _JSON_CONTENT_TYPES):
-            logger.debug(
-                "detect_feed_type: content-type '%s' suggests JSON; "
-                "attempting JSON detection despite first_byte=%r",
-                ct_lower, first_byte,
-            )
-            result = _detect_json_type(decoded_content)
-            if result is not None:
-                return result
-
     if ct_lower and first_byte != b"<":
         # Content-Type says XML but first byte wasn't <
         if any(xct in ct_lower for xct in _XML_CONTENT_TYPES):
@@ -144,158 +113,12 @@ def detect_feed_type(
             if result is not None:
                 return result
 
-    # ----- File extension fallback for local files -----
-    # (content_type might be a filename hint like ".json")
-    if ct_lower.endswith(".json") or ct_lower.endswith(".json\""):
-        result = _detect_json_type(decoded_content)
-        if result is not None:
-            return result
-
     logger.debug(
         "detect_feed_type: unrecognized (first_byte=%r, content_type=%r)",
         first_byte, content_type,
     )
     return None
 
-
-def _detect_json_type(content: bytes) -> str | None:
-    """Detect JSON-based feed types: JSON Feed or WordPress REST."""
-    try:
-        data = json.loads(content)
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        logger.debug("JSON parse failed during detection")
-        return None
-
-    # JSON Feed: object with "version" containing "jsonfeed.org"
-    if isinstance(data, dict):
-        version = data.get("version", "")
-        if isinstance(version, str):
-            # Primary: full spec URL (e.g. "https://jsonfeed.org/version/1.1")
-            if "jsonfeed.org" in version:
-                return "json_feed"
-            # Fallback: bare version strings used by non-compliant generators
-            if version in ("1", "1.0", "1.1"):
-                # Only if other JSON Feed markers are present
-                if "items" in data and ("title" in data or "home_page_url" in data):
-                    logger.debug(
-                        "JSON Feed detected via bare version '%s' (non-standard)", version
-                    )
-                    return "json_feed"
-
-    # WordPress REST: array of objects with title.rendered and _links
-    if isinstance(data, list) and len(data) > 0:
-        first = data[0]
-        if isinstance(first, dict):
-            title = first.get("title")
-            if isinstance(title, dict) and "rendered" in title:
-                if "_links" in first:
-                    return "wp_rest"
-                # Fallback: _links stripped by cache/CDN — check secondary markers
-                if _has_wp_rest_markers(first):
-                    logger.debug(
-                        "WP REST detected without _links (secondary markers)"
-                    )
-                    return "wp_rest"
-
-    # Single WP REST post object (less common but possible)
-    if isinstance(data, dict):
-        title = data.get("title")
-        if isinstance(title, dict) and "rendered" in title:
-            if "_links" in data:
-                return "wp_rest"
-            if _has_wp_rest_markers(data):
-                logger.debug(
-                    "WP REST single object detected without _links (secondary markers)"
-                )
-                return "wp_rest"
-
-    # WP REST API namespace index — e.g. /wp-json/wp/v2
-    # Returns {"namespace": "wp/v2", "routes": {...}, "_links": {...}}
-    if isinstance(data, dict):
-        if "namespace" in data and "routes" in data:
-            logger.debug(
-                "WP REST API namespace index detected (namespace=%s)",
-                data.get("namespace"),
-            )
-            return "wp_rest_index"
-
-    # WP REST site root — e.g. /wp-json/
-    # Returns {"name": "...", "namespaces": [...], "url": "...", ...}
-    if isinstance(data, dict):
-        if "namespaces" in data and ("url" in data or "name" in data):
-            namespaces = data.get("namespaces", [])
-            if isinstance(namespaces, list) and any(
-                isinstance(ns, str) and ns.startswith("wp/")
-                for ns in namespaces
-            ):
-                logger.debug(
-                    "WP REST site root detected (namespaces=%s)",
-                    namespaces[:5],
-                )
-                return "wp_rest_index"
-
-    # Log unrecognized JSON for diagnostics
-    if isinstance(data, dict):
-        logger.debug(
-            "JSON detected but unrecognized; top-level keys: %s",
-            list(data.keys())[:10],
-        )
-    elif isinstance(data, list):
-        first_keys = list(data[0].keys())[:10] if data and isinstance(data[0], dict) else "N/A"
-        logger.debug(
-            "JSON array detected but unrecognized; length=%d, first-item keys: %s",
-            len(data), first_keys,
-        )
-
-    return None
-
-
-def _has_wp_rest_markers(obj: dict[str, Any]) -> bool:
-    """Check for secondary WordPress REST API markers when _links is absent."""
-    # A WP REST post typically has several of these fields
-    wp_markers = ("slug", "date_gmt", "modified_gmt", "guid", "type", "status")
-    hits = sum(1 for k in wp_markers if k in obj)
-    if hits < 2:
-        return False
-    # Extra confidence: "type" is usually "post" or "page"
-    obj_type = obj.get("type", "")
-    if isinstance(obj_type, str) and obj_type in ("post", "page", "attachment", "revision"):
-        return True
-    # Or "guid" is a dict with "rendered"
-    guid = obj.get("guid")
-    if isinstance(guid, dict) and "rendered" in guid:
-        return True
-    return hits >= 3
-
-
-def derive_wp_rest_posts_url(url: str) -> str | None:
-    """Derive the WP REST posts endpoint from a WP REST index/root URL.
-
-    Recognizes patterns like:
-    - ``https://example.com/wp-json/wp/v2``  →  ``…/wp/v2/posts?_embed``
-    - ``https://example.com/wp-json/wp/v2/``  →  ``…/wp/v2/posts?_embed``
-    - ``https://example.com/wp-json/``  →  ``…/wp-json/wp/v2/posts?_embed``
-    - ``https://example.com/wp-json``  →  ``…/wp-json/wp/v2/posts?_embed``
-
-    Returns:
-        The posts endpoint URL, or ``None`` if the URL doesn't look like
-        a WP REST root.
-    """
-    import re
-
-    stripped = url.rstrip("/")
-
-    # Pattern 1: ends with /wp-json/wp/v2  (namespace index)
-    match = re.match(r"^(.*?/wp-json/wp/v\d+)$", stripped, re.IGNORECASE)
-    if match:
-        return match.group(1) + "/posts?_embed"
-
-    # Pattern 2: ends with /wp-json  (site root)
-    match = re.match(r"^(.*?/wp-json)$", stripped, re.IGNORECASE)
-    if match:
-        return match.group(1) + "/wp/v2/posts?_embed"
-
-    return None
 
 
 def _detect_xml_type(content: bytes) -> str | None:

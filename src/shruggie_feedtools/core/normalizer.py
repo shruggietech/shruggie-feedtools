@@ -366,18 +366,6 @@ def _normalize_enclosures(data: dict) -> list[dict[str, Any]]:
                     ),
                 })
 
-    # JSON Feed attachments
-    attachments = data.get("attachments") or []
-    for att in attachments:
-        if isinstance(att, dict):
-            url = att.get("url", "")
-            if url:
-                result.append({
-                    "url": url,
-                    "type": att.get("mime_type", ""),
-                    "length": _parse_int(att.get("size_in_bytes")),
-                })
-
     return result
 
 

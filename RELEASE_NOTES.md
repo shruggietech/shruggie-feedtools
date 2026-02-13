@@ -7,19 +7,18 @@
 
 ## Overview
 
-Targeted reliability release resolving two persistent issues from v0.1.4: WordPress REST API index URLs failing to parse, and GUI favicons not surviving CustomTkinter's startup icon overrides. Also fixes a stale hardcoded user-agent string and eliminates recurring snapshot maintenance caused by version bumps.
+Targeted reliability release resolving two persistent issues from v0.1.4: GUI favicons not surviving CustomTkinter's startup icon overrides, and a stale hardcoded user-agent string. Also eliminates recurring snapshot maintenance caused by version bumps and removes non-functional JSON Feed and WP REST input support.
 
 ---
 
 ## Bug Fixes
 
-### WordPress REST API Index URL Auto-Discovery
+### Removed: JSON Feed and WordPress REST API Input Support
 
-- **Fixed: "Parse" failing for WP REST root URLs** — Entering URLs like `https://example.com/wp-json/wp/v2` or `https://example.com/wp-json/` previously returned "Response does not match any known feed format" because those endpoints return API index/discovery JSON, not post data. The detector now recognizes these responses as `wp_rest_index` and the parser auto-discovers the correct `/posts?_embed` endpoint, transparently re-fetching and parsing the actual posts.
-- **Supports two WP REST index patterns:**
-  - Namespace index (`/wp-json/wp/v2`) — identified by `namespace` + `routes` keys
-  - Site root (`/wp-json/`) — identified by `namespaces` array containing `wp/*` entries
-- **New helper:** `derive_wp_rest_posts_url()` maps index URLs to their posts endpoint
+- **Removed all JSON Feed (input) and WordPress REST API (input) adapters, detection logic, fixtures, and tests** — These features were persistently non-functional after multiple implementation attempts. Input parsing now supports XML-based feeds only (RSS 2.0, RSS 1.0/RDF, Atom 1.0, RSS 0.9x, Atom 0.3).
+- **Output format is unchanged** — All output is still JSON. Only the *input* JSON Feed and WP REST adapters have been removed.
+- Files removed: `json_feed_adapter.py`, `wp_rest_adapter.py`, `tests/fixtures/json_feed/`, `tests/fixtures/wp_rest/`, `tests/snapshots/json_feed/`, `tests/snapshots/wp_rest/`
+- Enum values `"json_feed"` and `"wp_rest"` removed from `source.type`
 
 ### GUI Favicon — Win32 API Override
 
@@ -44,9 +43,8 @@ Targeted reliability release resolving two persistent issues from v0.1.4: WordPr
 
 | Area | Tests Added | Description |
 |---|---|---|
-| `test_detector.py` | 3 | WP REST namespace index, site root, and negative case |
-| `test_detector.py` | 6 | `derive_wp_rest_posts_url()` URL derivation (namespace, root, subdir, negative) |
-| **Total** | **9 new** | **326 total tests passing** |
+| `test_detector.py` | 3 | Content-type fallback, BOM handling, XML detection |
+| **Total** | **3 new** | **Tests passing** |
 
 ---
 
@@ -65,9 +63,9 @@ Download from [GitHub Releases](https://github.com/shruggietech/shruggie-feedtoo
 
 ## Upgrade Notes
 
-- Drop-in replacement for v0.1.4 — no schema changes, no API changes
+- Drop-in replacement for v0.1.4 — no schema changes to existing output fields, no API changes for XML-based feed parsing
 - Download the latest `.exe` from [GitHub Releases](https://github.com/shruggietech/shruggie-feedtools/releases) — no pip install required
-- WP REST API root/index URLs that previously failed will now auto-discover and parse posts
+- JSON Feed and WP REST API input URLs will no longer parse (these features have been removed)
 - GUI favicon should now persist reliably on Windows
 - HTTP requests now correctly identify as `shruggie-feedtools/0.1.5`
 

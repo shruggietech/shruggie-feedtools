@@ -107,43 +107,6 @@ class TestCliParse:
         assert data["status"] == "ok"
         assert data["source"]["origin"] == "file"
 
-    def test_cli_parse_file_json_feed(self) -> None:
-        """Parse --file with a JSON Feed fixture produces valid output."""
-        fixture = FIXTURES_DIR / "json_feed" / "v1_standard.json"
-        stdout, _stderr, code = run_cli(["parse", "--file", str(fixture)])
-
-        assert code == 0
-        data = json.loads(stdout)
-        assert data["status"] == "ok"
-        assert data["source"]["type"] == "json_feed"
-        assert data["source"]["origin"] == "file"
-        assert data["feed"]["title"]
-        assert len(data["items"]) > 0
-
-    def test_cli_parse_url_json_feed(self) -> None:
-        """Parse --url with a mocked JSON Feed response produces valid output."""
-        fixture = FIXTURES_DIR / "json_feed" / "v1_standard.json"
-        content = fixture.read_bytes()
-
-        with mock.patch("shruggie_feedtools.core.parser.fetch") as mock_fetch:
-            from shruggie_feedtools.core.fetcher import FetchResult
-
-            mock_fetch.return_value = FetchResult(
-                ok=True,
-                content=content,
-                content_type="application/feed+json",
-                final_url="https://example.com/feed.json",
-                status_code=200,
-            )
-            stdout, _stderr, code = run_cli(
-                ["parse", "--url", "https://example.com/feed.json"]
-            )
-
-        assert code == 0
-        data = json.loads(stdout)
-        assert data["status"] == "ok"
-        assert data["source"]["type"] == "json_feed"
-
     def test_cli_parse_stdin(self) -> None:
         """Parse --stdin reads URLs from stdin and produces JSON."""
         fixture = FIXTURES_DIR / "rss2" / "minimal.xml"
