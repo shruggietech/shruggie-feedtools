@@ -77,14 +77,37 @@
                     "manifest.webmanifest",
                     "app.webmanifest"
                 ],
-                "url": "https://json.schemastore.org/web-manifest.json"
+                "url": "https://schemas.shruggie.tech/data/web-manifest.schema.json"
             },{
                 "fileMatch": [
                     "*_meta.json",
                     "*_directorymeta.json",
                     "*-feeds-export_index.json"
                 ],
-                "url": "https://cdn.h8rt3rmin8r.com/schemas/MakeIndex.meta.json"
+                "url": "https://schemas.shruggie.tech/data/shruggie-indexer-v1.schema.json"
+            },{
+                "fileMatch": [
+                    "*_meta2.json",
+                    "*_directorymeta2.json",
+                    "*-feeds-export_index2.json"
+                ],
+                "url": "https://schemas.shruggie.tech/data/shruggie-indexer-v2.schema.json"
+            },{
+                "fileMatch": [
+                    "*_meta3.json",
+                    "*_directorymeta3.json",
+                    "*-feeds-export_index3.json"
+                ],
+                "url": "https://schemas.shruggie.tech/data/shruggie-indexer-v3.schema.json"
+            },{
+                "fileMatch": [
+                    "*_meta4.json",
+                    "*_directorymeta4.json",
+                    "*-feeds-export_index4.json",
+                    "*_idx.json",
+                    "*_idxd.json"
+                ],
+                "url": "https://schemas.shruggie.tech/data/shruggie-indexer-v4.schema.json"
             }
         ],
         "[powershell]": {
